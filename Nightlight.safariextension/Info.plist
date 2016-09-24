@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Author</key>
+	<string>Gofake1</string>
+	<key>Builder Version</key>
+	<string>12602.1.50.0.9</string>
+	<key>CFBundleDisplayName</key>
+	<string>Nightlight</string>
+	<key>CFBundleIdentifier</key>
+	<string>net.gofake1.nightlight</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleShortVersionString</key>
+	<string>0.1</string>
+	<key>CFBundleVersion</key>
+	<string>1</string>
+	<key>Chrome</key>
+	<dict>
+		<key>Database Quota</key>
+		<integer>5242880</integer>
+		<key>Global Page</key>
+		<string>global.html</string>
+		<key>Popovers</key>
+		<array>
+			<dict>
+				<key>Filename</key>
+				<string>popover.html</string>
+				<key>Height</key>
+				<integer>200</integer>
+				<key>Identifier</key>
+				<string>nightlight_popover</string>
+				<key>Width</key>
+				<integer>125</integer>
+			</dict>
+		</array>
+		<key>Toolbar Items</key>
+		<array>
+			<dict>
+				<key>Identifier</key>
+				<string>nightlight_toolbar_button</string>
+				<key>Image</key>
+				<string>toolbar.png</string>
+				<key>Include By Default</key>
+				<true/>
+				<key>Label</key>
+				<string>Nightlight</string>
+				<key>Popover</key>
+				<string>nightlight_popover</string>
+				<key>Tool Tip</key>
+				<string>Nightlight</string>
+			</dict>
+		</array>
+	</dict>
+	<key>Content</key>
+	<dict>
+		<key>Scripts</key>
+		<dict>
+			<key>End</key>
+			<array>
+				<string>nightlight.js</string>
+			</array>
+		</dict>
+	</dict>
+	<key>Description</key>
+	<string>Darken websites for more pleasant surfing at night.</string>
+	<key>DeveloperIdentifier</key>
+	<string>0000000000</string>
+	<key>ExtensionInfoDictionaryVersion</key>
+	<string>1.0</string>
+	<key>Permissions</key>
+	<dict>
+		<key>Website Access</key>
+		<dict>
+			<key>Include Secure Pages</key>
+			<true/>
+			<key>Level</key>
+			<string>All</string>
+		</dict>
+	</dict>
+	<key>Website</key>
+	<string>http://www.gofake1.net/projects/nightlight.html</string>
+</dict>
+</plist>
