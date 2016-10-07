@@ -1,8 +1,16 @@
-var IS_ON            = true;
-var IS_DARK          = false;
 var DARKEN_IMAGES    = false;
-var WEBPAGE_COLORS   = [];
 var IGNORED_ELEMENTS = ['CANVAS','VIDEO','SCRIPT'];
+var WEBPAGE_COLORS   = {
+  bgColors:   new Map(),
+  textColors: new Map()
+};
+var STATE            = {
+  ACTIVE_NOT_DARKENED:   0,
+  ACTIVE_DARKENED:       1,
+  INACTIVE_DARKENED:     2,
+  INACTIVE_NOT_DARKENED: 3
+};
+var CURRENT_STATE    = STATE.INACTIVE_NOT_DARKENED;
 
 function color(r, g, b, a) {
   this.r = r;
@@ -22,6 +30,9 @@ function color(r, g, b, a) {
       ((0|(1<<8) + this.b).toString(16)).substr(1)
     );
   };
+  this.isTransparent = function() {
+    return this.a === 0;
+  };
   /// Return saturation from HSV color model
   this.saturation = function() {
     var max = Math.max(this.r, Math.max(this.g, this.b));
@@ -36,16 +47,11 @@ function color(r, g, b, a) {
   this.luminance = function() {
     return ((this.r*3)+this.b+(this.g*4)) >> 3;
   };
-  /// Returns whether the color is considered light
   this.isLight = function() {
-    return this.luminance() > 100;
+    return this.luminance() > 80;
   };
-  /// Returns whether the color is more luminated than the other
-  this.lighter = function(otherColor) {
-    return this.luminance() > otherColor.luminance();
-  };
-  /// Returns a lighter or darker color as a hex string
-  /// percent: positive integer (brighter), negative (darker)
+  /// Returns a lighter or darker color
+  /// percent: positive integer (brighter), negative (darker),
   ///          must be between [-100, 100]
   this.shade = function(percent) {
     var r = this.r + (256 - this.r) * percent/100;
@@ -62,14 +68,6 @@ function color(r, g, b, a) {
   /// Returns the inverted color
   this.invert = function() {
     return new color(255-this.r, 255-this.g, 255-this.b, this.a);
-  };
-  /// Returns a color that is less similar to the other color
-  /// or the same color if contrast adjustment is not needed
-  this.contrast = function(otherColor) {
-    if (Math.abs(this.luminance() - otherColor.luminance()) < 50) {
-      return this.shade(50);
-    }
-    return this;
   };
 }
 
@@ -90,26 +88,89 @@ function colorFromHex(hexStr) {
   return new color(r, g, b, 1);
 }
 
-function makeWebpageColorsFrom(element) {
+function blackColor() {
+  return new color(0, 0, 0, 1);
+}
+
+function grayColor() {
+  return new color(128, 128, 128, 1);
+}
+
+function clearColor() {
+  return new color(0, 0, 0, 0);
+}
+
+function makeWebpageColors(element) {
   if (
-    !IGNORED_ELEMENTS.includes(element.tagName) && 
-    ![3, 8].includes(element.nodeType)
+    element === undefined ||
+    IGNORED_ELEMENTS.includes(element.tagName) ||
+    [3, 8].includes(element.nodeType)
   ) {
-    var elementStyle = getComputedStyle(element);
-    WEBPAGE_COLORS.push({
-      color:   elementStyle.color,
-      bgColor: elementStyle.backgroundColor,
-      bgImage: elementStyle.backgroundImage
-    });
+    return;
   }
+
+  var style = getComputedStyle(element);
+  var oldBgColor = colorFromStr(style.backgroundColor);
+  var oldTextColor = colorFromStr(style.color);
+  
+  var newBgColor, newTextColor;
+  if (
+    !oldBgColor.isTransparent() &&
+    !WEBPAGE_COLORS.bgColors.has(oldBgColor.rgbString())
+  ) {
+    if (oldBgColor.isColorful()) {
+      newBgColor = oldBgColor.shade(-20);
+    } else {
+      if (oldBgColor.isLight()) {
+        newBgColor = oldBgColor.invert();
+      } else {
+        newBgColor = oldBgColor.shade(-50);
+      }
+    }
+    WEBPAGE_COLORS.bgColors.set(
+      oldBgColor.rgbString(), newBgColor.rgbString()
+    );
+  }
+
+  if (
+    !oldTextColor.isTransparent() &&
+    !WEBPAGE_COLORS.textColors.has(oldTextColor.rgbString())
+  ) {
+    if (oldTextColor.isColorful()) {
+      if (!oldTextColor.isLight()) {
+        newTextColor = oldTextColor.shade(50);
+      } else {
+        newTextColor = oldTextColor;
+      }
+    } else {
+      if (!oldTextColor.isLight()) {
+        newTextColor = oldTextColor.invert();
+      } else {
+        newTextColor = oldTextColor;
+      }
+    }
+    WEBPAGE_COLORS.textColors.set(
+      oldTextColor.rgbString(), newTextColor.rgbString()
+    );
+  }
+
   element = element.firstChild;
   while (element) {
-    makeWebpageColorsFrom(element);
+    makeWebpageColors(element);
     element = element.nextSibling;
   }
 }
 
-function nightlight(element, newBgColor, newTextColor) {
+function getNewColor(type, oldColor) {
+  switch (type) {
+    case 'bg':
+      return WEBPAGE_COLORS.bgColors.get(oldColor);
+    case 'text':
+      return WEBPAGE_COLORS.textColors.get(oldColor);
+  }
+}
+
+function nightlight(mode, element) {
   if (
     element === undefined ||
     [3, 8].includes(element.nodeType) ||
@@ -118,28 +179,37 @@ function nightlight(element, newBgColor, newTextColor) {
     return;
   }
 
-  if (IS_ON) {
+  if (mode == 'on') {
     var style = getComputedStyle(element);
     var oldBgColor = colorFromStr(style.backgroundColor);
     var oldTextColor = colorFromStr(style.color);
 
+    if (oldBgColor.isTransparent()) {
+      newBgColor = clearColor().rgbString();
+    } else {
+      newBgColor = getNewColor('bg', oldBgColor.rgbString());
+    }
+    if (oldTextColor.isTransparent()) {
+      newTextColor = clearColor().rgbString();
+    } else {
+      newTextColor = getNewColor('text', oldTextColor.rgbString());
+    }
+    
     if (newBgColor === undefined) {
-      newBgColor = colorFromHex('#000000');
+      newBgColor = blackColor().rgbString();
     }
     if (newTextColor === undefined) {
-      newTextColor = colorFromHex('#888888');
-    }
-    if (oldBgColor.isColorful()) {
-      newBgColor = oldBgColor.shade(-50);
-    } else if (oldBgColor.isLight() && oldBgColor.lighter(newBgColor)) {
-      newBgColor = oldBgColor.invert();
+      newTextColor = grayColor().rgbString();
     }
 
     switch (element.tagName) {
       case 'BODY':
+        if (colorFromStr(newBgColor).isTransparent()) {
+          newBgColor = blackColor().rgbString();
+        }
         element.style.backgroundImage = 'none';
-        element.style.backgroundColor = newBgColor.rgbString();
-        element.style.color = oldTextColor.contrast(newBgColor).rgbString();
+        element.style.backgroundColor = newBgColor;
+        element.style.color = newTextColor;
         break;
       case 'IMG':
         if (DARKEN_IMAGES) {
@@ -149,18 +219,19 @@ function nightlight(element, newBgColor, newTextColor) {
       case 'DIV':
       case 'SPAN':
         if (style.backgroundImage != 'none') {
-          return;
+          // invertText
+          break;
         }
-        element.style.backgroundColor = newBgColor.rgbString();
-        element.style.color = oldTextColor.contrast(newBgColor).rgbString();
+        element.style.backgroundColor = newBgColor;
+        element.style.color = newTextColor;
         break;
       default:
-        element.style.backgroundColor = newBgColor.rgbString();
-        element.style.color = oldTextColor.contrast(newBgColor).rgbString();
+        element.style.backgroundColor = newBgColor;
+        element.style.color = newTextColor;
         break;
     }
 
-  } else if (!IS_ON && IS_DARK) {
+  } else if (mode == 'off') {
     switch (element.tagName) {
       case 'IMG':
         element.style.filter = null;
@@ -169,16 +240,60 @@ function nightlight(element, newBgColor, newTextColor) {
         element.style.backgroundColor = null;
         element.style.color = null;
     }
-  } else {
-    return;
   }
 
   element = element.firstChild;
   while (element) {
-    nightlight(element, newBgColor, newTextColor);
+    nightlight(mode, element);
     element = element.nextSibling;
   }
 }
 
-nightlight(document.body);
-IS_DARK = true;
+function update(isOn) {
+  switch (CURRENT_STATE) {
+    case STATE.ACTIVE_NOT_DARKENED:
+      makeWebpageColors(document.body);
+      //chrome.runtime.sendMessage({webpageColors: WEBPAGE_COLORS});
+      nightlight('on', document.body);
+      CURRENT_STATE = STATE.ACTIVE_DARKENED;
+      break;
+    case STATE.ACTIVE_DARKENED:
+      if (!isOn) {
+        CURRENT_STATE = STATE.INACTIVE_DARKENED;
+        update(isOn);
+      }
+      break;
+    case STATE.INACTIVE_DARKENED:
+      nightlight('off', document.body);
+      CURRENT_STATE = STATE.INACTIVE_NOT_DARKENED;
+      break;
+    case STATE.INACTIVE_NOT_DARKENED:
+      if (isOn) {
+        CURRENT_STATE = STATE.ACTIVE_NOT_DARKENED;
+        update(isOn);
+      }
+      break;
+  }
+}
+
+function handleMessage(request, sender, sendResponse) {
+  if (!sender.tab) {
+    DARKEN_IMAGES = request.darkenImages;
+    update(request.isOn);
+  }
+}
+
+function handleMutations(mutations) {
+  mutations.forEach(function(mutation) {
+    mutation.addedNodes.forEach(function(addedNode) {
+      makeWebpageColors(addedNode);
+      if (CURRENT_STATE == (STATE.ACTIVE_DARKENED || STATE.ACTIVE_NOT_DARKENED)) {
+        nightlight('on', addedNode);
+      }
+    });
+  });
+}
+
+chrome.runtime.onMessage.addListener(handleMessage);
+var observer = new MutationObserver(handleMutations);
+observer.observe(document.body, {childList: true, subtree: true});

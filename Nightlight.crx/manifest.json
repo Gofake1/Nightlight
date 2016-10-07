@@ -4,7 +4,7 @@
     "version": "0.1",
     "author": "Gofake1",
     "description": "Darken websites for more pleasant surfing at night.",
-    "homepage_url": "http://gofake1.net/projects/nightlight",
+    "homepage_url": "http://gofake1.net/projects/nightlight.html",
     "icons": {
         "128": "icon128.png"
     },
@@ -25,7 +25,13 @@
             "js": ["nightlight.js"]
         }
     ],
+    "options_ui": {
+        "page": "options.html",
+        "chrome_style": true
+    },
     "permissions": [
-        "alarms"
+        "alarms",
+        "storage",
+        "tabs"
     ]
 }

@@ -1,5 +1,8 @@
 # [Nightlight](http://gofake1.net/projects/nightlight.html)
-### Browse the internet more comfortably at night
+Browse the internet more comfortably at night
+
+![Nightlight screenshot](http://gofake1.net/images/nightlight.png)
+Nightlight is a browser extension that darkens websites while attempting to preserve their original design. It may not achieve the best results for complex websites; if you visit such sites frequently, you may find [Stylish](https://userstyles.org) more appropriate.
 
 ## Installation
 
@@ -9,4 +12,4 @@ Install from source using the [Extension Builder](https://developer.apple.com/li
 #### Chrome
 Install from source using [developer mode](https://developer.chrome.com/extensions/getstarted#unpacked), or get it from the [Chrome Store]().
 
-*The project is available under the [MIT License]().*
+*This project is available under the MIT License.*

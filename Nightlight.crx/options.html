@@ -1,0 +1,32 @@
+<head>
+  <title>Nightlight Options</title>
+  <style>
+  div {
+    padding-bottom: 7px;
+    padding-top: 7px;
+  }
+  span {
+    min-width: 100px;
+  }
+  label {
+    align-items: center;
+    display: inline-flex;
+  }
+  .textbox {
+    max-width: 100px;
+  }
+  </style>
+</head>
+<body>
+  <div><label><input id="darkenImages" type="checkbox">Darken Images</label></div>
+  <div><label><input id="autoOn" type="checkbox">Automatically Turn On/Off</label></div>
+  <div><label><span>Turn On At:</span><input id="onTime" class="textbox"></label></div>
+  <div><label><span>Turn Off At:</span><input id="offTime" class="textbox"></label></div>
+  <div>Blacklist:<br><textarea id="blacklist" cols="56"></textarea></div>
+  <div>
+  <button id="save">Save</button>
+  <button id="defaults">Restore Defaults</button>
+  <span id="status"></span>
+  </div>
+  <script src="options.js"></script>
+</body>

@@ -3,6 +3,8 @@
   body {
     font-family: -apple-system, 'Helvetica';
     font-size: 12px;
+    height: 200px;
+    width: 125px;
   }
   #statusText {
     color: gray;
@@ -10,120 +12,16 @@
   #statusText b {
     color: black;
   }
-  #colorGrid {
-    display: flex;
-    flex-wrap: wrap;
-  }
   .colorWell {
-    border-radius: 50%;
-    height: 20px;
-    width: 20px;
-    margin: 5px;
+    height: 15px;
+    width: 50px;
   }
 </style>
 </head>
 
 <body>
-<p><input id="isOnCheckbox" type="checkbox" onchange="handleIsOn(this)" tabindex="-1">Nightlight <span id="statusText"></span></p>
+<p><input id="isOnCheckbox" type="checkbox" tabindex="-1">Nightlight <span id="statusText"></span></p>
 <hr>
 <div id="colorGrid"></div>
-<script>
-//var BLACKLIST = safari.extension.settings.blacklist.split(',');
-var WARNINGS = {
-  NOT_WEBPAGE: 'This is not a webpage and won\'t be modified.',
-  BLACKLISTED: 'This page is blacklisted and won\'t be modified.'
-};
-
-function handleIsOn(input) {
-  //safari.extension.settings.isOn = input.checked;
-}
-
-function displayColorGridWithColors(colors) {
-  var colorGrid = document.getElementById('colorGrid');
-  if (colorGrid.childNodes.length > 0) {
-    colorGrid.removeChild(colorGrid.childNodes[0]);
-  }
-
-  var colorWell;
-  for (let color of colors.textColors) {
-    colorWell = document.createElement('div');
-    colorWell.className = 'colorWell';
-    colorWell.style.border = '2px solid '+color;
-    colorGrid.appendChild(colorWell);
-  }
-  for (let color of colors.bgColors) {
-    colorWell = document.createElement('div');
-    colorWell.className = 'colorWell';
-    colorWell.style.background = color;
-    colorWell.style.border = '2px solid '+color;
-    colorGrid.appendChild(colorWell);
-  }
-}
-
-function blacklistContains(url) {
-  if (url) {
-    for (var i = 0; i < BLACKLIST.length; i++) {
-      if (url.includes(BLACKLIST[i])) {
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
-function isWebpage(url) {
-  if (url) {
-    var tokens = url.split('/');
-    var fileExtension = tokens[tokens.length-1].split('.')[1];
-    if (fileExtension) {
-      return !['pdf'].includes(fileExtension.toLowerCase());
-    }
-  }
-  return false;
-}
-
-function toggleNightlight() {
-  //var isOn = safari.extension.settings.isOn;
-  //var url = safari.application.activeBrowserWindow.activeTab.url;
-
-  document.getElementById('isOnCheckbox').checked = isOn;
-  document.getElementById('statusText').innerHTML = (isOn ? '<b>On</b>' : 'Off');
-  document.getElementById('colorGrid').innerText = '';
-  
-  if (blacklistContains(url)) {
-    document.getElementById('colorGrid').innerText = WARNINGS.BLACKLISTED;
-  } else if (!isWebpage(url)) {
-    document.getElementById('colorGrid').innerText = WARNINGS.NOT_WEBPAGE;
-  } else {
-    /*safari.application.activeBrowserWindow.activeTab.page.dispatchMessage(
-      'toggleNightlight',
-      {
-        isOn:         isOn,
-        darkenImages: safari.extension.settings.darkenImages
-      }
-    );*/
-  }
-}
-
-function handleMessage(event) {
-  switch (event.name) {
-    case 'webpageColors':
-      displayColorGridWithColors(event.message);
-      break;
-  }
-}
-
-function handleSettings(event) {
-  switch (event.key) {
-    case 'isOn':
-      toggleNightlight();
-      break;
-  }
-}
-
-//safari.application.addEventListener('navigate', toggleNightlight, true);
-//safari.application.addEventListener('activate', toggleNightlight, true);
-//safari.application.addEventListener('message', handleMessage, false);
-//safari.extension.settings.addEventListener('change', handleSettings, false);
-</script>
+<script src="popup.js"></script>
 </body>

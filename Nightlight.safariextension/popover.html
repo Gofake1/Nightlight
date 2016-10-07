@@ -10,15 +10,9 @@
   #statusText b {
     color: black;
   }
-  #colorGrid {
-    display: flex;
-    flex-wrap: wrap;
-  }
   .colorWell {
-    border-radius: 50%;
-    height: 20px;
-    width: 20px;
-    margin: 5px;
+    height: 15px;
+    width: 50px;
   }
 </style>
 </head>
@@ -29,7 +23,7 @@
 <div id="colorGrid"></div>
 <script>
 var BLACKLIST = safari.extension.settings.blacklist.split(',');
-var WARNINGS = {
+var WARNING = {
   NOT_WEBPAGE: 'This is not a webpage and won\'t be modified.',
   BLACKLISTED: 'This page is blacklisted and won\'t be modified.'
 };
@@ -38,26 +32,49 @@ function handleIsOn(input) {
   safari.extension.settings.isOn = input.checked;
 }
 
-function displayColorGridWithColors(colors) {
+function displayColorGrid(colors) {
   var colorGrid = document.getElementById('colorGrid');
-  if (colorGrid.childNodes.length > 0) {
-    colorGrid.removeChild(colorGrid.childNodes[0]);
+  while (colorGrid.firstChild) {
+    colorGrid.removeChild(colorGrid.firstChild);
   }
 
-  var colorWell;
-  for (let color of colors.textColors) {
-    colorWell = document.createElement('div');
+  var colorTable = document.createElement('table');
+  var colorRow, colorWell;
+  for (let [oldColor, newColor] of colors.textColors) {
+    colorRow = document.createElement('tr');
+
+    colorWell = document.createElement('td');
     colorWell.className = 'colorWell';
-    colorWell.style.border = '2px solid '+color;
-    colorGrid.appendChild(colorWell);
-  }
-  for (let color of colors.bgColors) {
-    colorWell = document.createElement('div');
+    colorWell.style.border = '2px solid '+oldColor;
+    colorRow.appendChild(colorWell);
+
+    colorWell = document.createElement('td');
     colorWell.className = 'colorWell';
-    colorWell.style.background = color;
-    colorWell.style.border = '2px solid '+color;
-    colorGrid.appendChild(colorWell);
+    colorWell.style.border = '2px solid '+newColor;
+    colorRow.appendChild(colorWell);
+
+    colorTable.appendChild(colorRow);
   }
+
+  for (let [oldColor, newColor] of colors.bgColors) {
+    colorRow = document.createElement('tr');
+
+    colorWell = document.createElement('td');
+    colorWell.className = 'colorWell';
+    colorWell.style.background = oldColor;
+    colorWell.style.border = '2px solid '+oldColor;
+    colorRow.appendChild(colorWell);
+
+    colorWell = document.createElement('td');
+    colorWell.className = 'colorWell';
+    colorWell.style.background = newColor;
+    colorWell.style.border = '2px solid '+newColor;
+    colorRow.appendChild(colorWell);
+
+    colorTable.appendChild(colorRow);
+  }
+  
+  colorGrid.appendChild(colorTable);
 }
 
 function blacklistContains(url) {
@@ -79,7 +96,7 @@ function isWebpage(url) {
       return !['pdf'].includes(fileExtension.toLowerCase());
     }
   }
-  return false;
+  return true;
 }
 
 function toggleNightlight() {
@@ -91,24 +108,25 @@ function toggleNightlight() {
   document.getElementById('colorGrid').innerText = '';
   
   if (blacklistContains(url)) {
-    document.getElementById('colorGrid').innerText = WARNINGS.BLACKLISTED;
+    document.getElementById('colorGrid').innerText = WARNING.BLACKLISTED;
   } else if (!isWebpage(url)) {
-    document.getElementById('colorGrid').innerText = WARNINGS.NOT_WEBPAGE;
+    document.getElementById('colorGrid').innerText = WARNING.NOT_WEBPAGE;
   } else {
-    safari.application.activeBrowserWindow.activeTab.page.dispatchMessage(
-      'toggleNightlight',
-      {
-        isOn:         isOn,
-        darkenImages: safari.extension.settings.darkenImages
-      }
-    );
+    if (safari.application.activeBrowserWindow.activeTab.page) {
+      safari.application.activeBrowserWindow.activeTab.page.dispatchMessage(
+        'toggleNightlight', {
+          isOn:         isOn,
+          darkenImages: safari.extension.settings.darkenImages
+        }
+      );
+    }
   }
 }
 
 function handleMessage(event) {
   switch (event.name) {
     case 'webpageColors':
-      displayColorGridWithColors(event.message);
+      displayColorGrid(event.message);
       break;
   }
 }
@@ -117,6 +135,9 @@ function handleSettings(event) {
   switch (event.key) {
     case 'isOn':
       toggleNightlight();
+      break;
+    case 'blacklist':
+      BLACKLIST = safari.extension.settings.blacklist.split(',');
       break;
   }
 }
