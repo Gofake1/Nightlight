@@ -4,32 +4,102 @@
     font-family: -apple-system, 'Helvetica';
     font-size: 12px;
   }
-  #statusText {
+  .centered {
+    margin: auto;
+    text-align: center;
+    width: 100%;
+  }
+  .disabledText {
     color: gray;
   }
-  #statusText b {
+  .statusText {
+    color: gray;
+  }
+  .statusText b {
     color: black;
   }
-  .colorWell {
+  .tableCell {
     height: 15px;
     width: 50px;
+  }
+  .textButton {
+    -webkit-appearance: none;
+    background-color: transparent;
+    border: none;
+    color: blue;
   }
 </style>
 </head>
 
 <body>
-<p><input id="isOnCheckbox" type="checkbox" onchange="handleIsOn(this)" tabindex="-1">Nightlight <span id="statusText"></span></p>
+<input id="isOnCheckbox" type="checkbox" onchange="handleIsOn(this)">Nightlight <span id="nightlightStatus" class="statusText"></span><br>
+<div id="moreSettingsContainer">
+  <button id="moreSettingsButton" class="centered textButton" onclick="handleMoreSettingsVisibility()">More Settings</button><br>
+</div>
 <hr>
 <div id="colorGrid"></div>
 <script>
+var AGGRESSIVE_LIST = safari.extension.settings.aggressiveList.split(',');
 var BLACKLIST = safari.extension.settings.blacklist.split(',');
+var IGNORED_TABS = [];
+var MORE_SETTINGS_DIV = document.createElement('div');
+var MORE_SETTINGS_VISIBLE = false;
 var WARNING = {
-  NOT_WEBPAGE: 'This is not a webpage and won\'t be modified.',
-  BLACKLISTED: 'This page is blacklisted and won\'t be modified.'
+  NOT_WEBPAGE: "This is not a webpage and won't be modified.",
+  BLACKLISTED: "This page is blacklisted and won't be modified."
 };
+
+MORE_SETTINGS_DIV.innerHTML = '<input id="ignoreTabCheckbox" type="checkbox" onchange="handleIgnoreTab(this)"><span id="ignoreTabLabel">Ignore Tab</span><br><input id="isAggressiveCheckbox" type="checkbox" onchange="handleIsAggressive(this)"><span id="isAggressiveLabel">Aggressive</span><br>';
+
+function configureControls() {
+  if (safari.extension.settings.isOn === false) {
+      document.getElementById('ignoreTabCheckbox').disabled = true;
+      document.getElementById('ignoreTabLabel').className = 'disabledText';
+      document.getElementById('isAggressiveCheckbox').disabled = true;
+      document.getElementById('isAggressiveLabel').className = 'disabledText';
+    } else {
+      document.getElementById('ignoreTabCheckbox').disabled = false;
+      document.getElementById('ignoreTabLabel').className = '';
+      document.getElementById('isAggressiveCheckbox').disabled = false;
+      document.getElementById('isAggressiveLabel').className = '';
+    }
+}
 
 function handleIsOn(input) {
   safari.extension.settings.isOn = input.checked;
+  if (MORE_SETTINGS_VISIBLE) {
+    configureControls();
+  }
+}
+
+function handleMoreSettingsVisibility() {
+  if (MORE_SETTINGS_VISIBLE) {
+    document.getElementById('moreSettingsContainer').removeChild(MORE_SETTINGS_DIV);
+    document.getElementById('moreSettingsButton').innerText = 'More Settings';
+    MORE_SETTINGS_VISIBLE = false;
+  } else {
+    document.getElementById('moreSettingsContainer').appendChild(MORE_SETTINGS_DIV);
+    document.getElementById('moreSettingsButton').innerText = 'Hide Settings';
+    MORE_SETTINGS_VISIBLE = true;
+
+    configureControls();
+  }
+}
+
+function handleIgnoreTab(input) {
+  if (input.checked) {
+    console.log(safari.application.activeBrowserWindow.activeTab); //DEBUG
+    IGNORED_TABS.push(safari.application.activeBrowserWindow.activeTab);
+    document.getElementById('isAggressiveCheckbox').disabled = true;
+    document.getElementById('isAggressiveLabel').className = 'disabledText';
+  } else {
+    document.getElementById('isAggressiveCheckbox').disabled = false;
+    document.getElementById('isAggressiveLabel').className = '';
+  }
+}
+
+function handleIsAggressive(input) {
+  //AGGRESSIVE_LIST.push();
 }
 
 function displayColorGrid(colors) {
@@ -44,12 +114,12 @@ function displayColorGrid(colors) {
     colorRow = document.createElement('tr');
 
     colorWell = document.createElement('td');
-    colorWell.className = 'colorWell';
+    colorWell.className = 'tableCell';
     colorWell.style.border = '2px solid '+oldColor;
     colorRow.appendChild(colorWell);
 
     colorWell = document.createElement('td');
-    colorWell.className = 'colorWell';
+    colorWell.className = 'tableCell';
     colorWell.style.border = '2px solid '+newColor;
     colorRow.appendChild(colorWell);
 
@@ -60,13 +130,13 @@ function displayColorGrid(colors) {
     colorRow = document.createElement('tr');
 
     colorWell = document.createElement('td');
-    colorWell.className = 'colorWell';
+    colorWell.className = 'tableCell';
     colorWell.style.background = oldColor;
     colorWell.style.border = '2px solid '+oldColor;
     colorRow.appendChild(colorWell);
 
     colorWell = document.createElement('td');
-    colorWell.className = 'colorWell';
+    colorWell.className = 'tableCell';
     colorWell.style.background = newColor;
     colorWell.style.border = '2px solid '+newColor;
     colorRow.appendChild(colorWell);
@@ -77,10 +147,11 @@ function displayColorGrid(colors) {
   colorGrid.appendChild(colorTable);
 }
 
-function blacklistContains(url) {
+function blacklistContains(urlStr) {
+  url = new URL(urlStr);
   if (url) {
     for (var i = 0; i < BLACKLIST.length; i++) {
-      if (url.includes(BLACKLIST[i])) {
+      if (url.hostname.includes(BLACKLIST[i])) {
         return true;
       }
     }
@@ -88,9 +159,9 @@ function blacklistContains(url) {
   return false;
 }
 
-function isWebpage(url) {
-  if (url) {
-    var tokens = url.split('/');
+function isWebpage(urlStr) {
+  if (urlStr) {
+    var tokens = urlStr.split('/');
     var fileExtension = tokens[tokens.length-1].split('.')[1];
     if (fileExtension) {
       return !['pdf'].includes(fileExtension.toLowerCase());
@@ -104,7 +175,7 @@ function toggleNightlight() {
   var url = safari.application.activeBrowserWindow.activeTab.url;
 
   document.getElementById('isOnCheckbox').checked = isOn;
-  document.getElementById('statusText').innerHTML = (isOn ? '<b>On</b>' : 'Off');
+  document.getElementById('nightlightStatus').innerHTML = (isOn ? '<b>On</b>' : 'Off');
   document.getElementById('colorGrid').innerText = '';
   
   if (blacklistContains(url)) {
@@ -121,6 +192,14 @@ function toggleNightlight() {
       );
     }
   }
+}
+
+function handleNavigate(event) {
+  toggleNightlight();
+}
+
+function handleActivate(event) {
+  toggleNightlight();
 }
 
 function handleMessage(event) {
@@ -142,8 +221,8 @@ function handleSettings(event) {
   }
 }
 
-safari.application.addEventListener('navigate', toggleNightlight, true);
-safari.application.addEventListener('activate', toggleNightlight, true);
+safari.application.addEventListener('navigate', handleNavigate, true);
+safari.application.addEventListener('activate', handleActivate, true);
 safari.application.addEventListener('message', handleMessage, false);
 safari.extension.settings.addEventListener('change', handleSettings, false);
 </script>

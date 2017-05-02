@@ -12,7 +12,7 @@ var STATE            = {
 };
 var CURRENT_STATE    = STATE.INACTIVE_NOT_DARKENED;
 
-function color(r, g, b, a) {
+function Color(r, g, b, a) {
   this.r = r;
   this.g = g;
   this.b = b;
@@ -63,41 +63,47 @@ function color(r, g, b, a) {
     r = (r > 255 ? 255 : r);
     g = (g > 255 ? 255 : g);
     b = (b > 255 ? 255 : b);
-    return new color(Math.round(r), Math.round(g), Math.round(b), this.a);
+    return new Color(Math.round(r), Math.round(g), Math.round(b), this.a);
   };
   /// Returns the inverted color
   this.invert = function() {
-    return new color(255-this.r, 255-this.g, 255-this.b, this.a);
+    return new Color(255-this.r, 255-this.g, 255-this.b, this.a);
   };
 }
 
-function colorFromStr(rgbStr) {
+function ColorFromStr(rgbStr) {
+  if (rgbStr === undefined) {
+    return;
+  }
   var rgb = rgbStr.replace(/rgba?\(/, '').replace(/\)/, '').split(',');
   var r = parseInt(rgb[0]);
   var g = parseInt(rgb[1]);
   var b = parseInt(rgb[2]);
   var a = (rgb[3] === undefined ? 1 : parseFloat(rgb[3]));
-  return new color(r, g, b, a);
+  return new Color(r, g, b, a);
 }
 
-function colorFromHex(hexStr) {
+function ColorFromHex(hexStr) {
+  if (hexStr === undefined) {
+    return;
+  }
   var decimal = parseInt(hexStr, 16);
   var r = (decimal >> 16) & 255;
   var g = (decimal >> 8) & 255;
   var b = (decimal) & 255;
-  return new color(r, g, b, 1);
+  return new Color(r, g, b, 1);
 }
 
-function blackColor() {
-  return new color(0, 0, 0, 1);
+function BlackColor() {
+  return new Color(0, 0, 0, 1);
 }
 
-function grayColor() {
-  return new color(128, 128, 128, 1);
+function GrayColor() {
+  return new Color(128, 128, 128, 1);
 }
 
-function clearColor() {
-  return new color(0, 0, 0, 0);
+function TransparentColor() {
+  return new Color(0, 0, 0, 0);
 }
 
 function makeWebpageColors(element) {
@@ -109,11 +115,11 @@ function makeWebpageColors(element) {
     return;
   }
 
-  var style = getComputedStyle(element);
-  var oldBgColor = colorFromStr(style.backgroundColor);
-  var oldTextColor = colorFromStr(style.color);
-  
+  var style        = getComputedStyle(element);
+  var oldBgColor   = ColorFromStr(style.backgroundColor);
+  var oldTextColor = ColorFromStr(style.color);
   var newBgColor, newTextColor;
+
   if (
     !oldBgColor.isTransparent() &&
     !WEBPAGE_COLORS.bgColors.has(oldBgColor.rgbString())
@@ -180,38 +186,40 @@ function nightlight(mode, element) {
   }
 
   if (mode == 'on') {
-    var style = getComputedStyle(element);
-    var oldBgColor = colorFromStr(style.backgroundColor);
-    var oldTextColor = colorFromStr(style.color);
+    var style        = getComputedStyle(element);
+    var oldBgColor   = ColorFromStr(style.backgroundColor);
+    var oldTextColor = ColorFromStr(style.color);
+    var newBgColor, newTextColor;
 
     if (oldBgColor.isTransparent()) {
-      newBgColor = clearColor().rgbString();
+      newBgColor = TransparentColor();
     } else {
-      newBgColor = getNewColor('bg', oldBgColor.rgbString());
+      newBgColor = ColorFromStr(getNewColor('bg', oldBgColor.rgbString()));
     }
     if (oldTextColor.isTransparent()) {
-      newTextColor = clearColor().rgbString();
+      newTextColor = TransparentColor();
     } else {
-      newTextColor = getNewColor('text', oldTextColor.rgbString());
+      newTextColor = ColorFromStr(getNewColor('text', oldTextColor.rgbString()));
     }
     
     if (newBgColor === undefined) {
-      newBgColor = blackColor().rgbString();
+      newBgColor = BlackColor();
     }
     if (newTextColor === undefined) {
-      newTextColor = grayColor().rgbString();
+      newTextColor = GrayColor();
     }
 
     switch (element.tagName) {
       case 'BODY':
-        if (colorFromStr(newBgColor).isTransparent()) {
-          newBgColor = blackColor().rgbString();
+        if (newBgColor.isTransparent()) {
+          newBgColor = BlackColor();
         }
         element.style.backgroundImage = 'none';
-        element.style.backgroundColor = newBgColor;
-        element.style.color = newTextColor;
+        element.style.backgroundColor = newBgColor.rgbString();
+        element.style.color = newTextColor.rgbString();
         break;
       case 'IMG':
+        element.style.backgroundColor = GrayColor();
         if (DARKEN_IMAGES) {
           element.style.filter = 'brightness(70%)';
         }
@@ -220,14 +228,16 @@ function nightlight(mode, element) {
       case 'SPAN':
         if (style.backgroundImage != 'none') {
           // invertText
-          break;
+          return;
         }
-        element.style.backgroundColor = newBgColor;
-        element.style.color = newTextColor;
+        element.style.backgroundColor = newBgColor.rgbString();
+        if (!newBgColor.isLight()) {
+          element.style.color = newTextColor.rgbString();
+        }
         break;
       default:
-        element.style.backgroundColor = newBgColor;
-        element.style.color = newTextColor;
+        element.style.backgroundColor = newBgColor.rgbString();
+        element.style.color = newTextColor.rgbString();
         break;
     }
 
@@ -297,6 +307,8 @@ function handleMutations(mutations) {
   safari.self.tab.dispatchMessage('webpageColors', WEBPAGE_COLORS);
 }
 
-safari.self.addEventListener('message', handleMessage, false);
+if (typeof(safari) == 'object') {
+  safari.self.addEventListener('message', handleMessage, false);
+}
 var observer = new MutationObserver(handleMutations);
 observer.observe(document.body, {childList: true, subtree: true});

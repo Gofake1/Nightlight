@@ -5,17 +5,17 @@
 	<key>Author</key>
 	<string>Gofake1</string>
 	<key>Builder Version</key>
-	<string>12603.1.6.0.2</string>
+	<string>12604.1.17</string>
 	<key>CFBundleDisplayName</key>
 	<string>Nightlight</string>
 	<key>CFBundleIdentifier</key>
-	<string>net.gofake1.nightlight</string>
+	<string>net.gofake1.safari.nightlight</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleShortVersionString</key>
-	<string>0.1.1</string>
+	<string>0.1.2</string>
 	<key>CFBundleVersion</key>
-	<string>1</string>
+	<string>0.1.2</string>
 	<key>Chrome</key>
 	<dict>
 		<key>Database Quota</key>
@@ -66,7 +66,7 @@
 	<key>Description</key>
 	<string>Darken websites for more pleasant surfing at night.</string>
 	<key>DeveloperIdentifier</key>
-	<string>0000000000</string>
+	<string>W6KLMFETUQ</string>
 	<key>ExtensionInfoDictionaryVersion</key>
 	<string>1.0</string>
 	<key>Permissions</key>
@@ -79,6 +79,8 @@
 			<string>All</string>
 		</dict>
 	</dict>
+	<key>Update Manifest URL</key>
+	<string>http://gofake1.net/files/nightlight_update.plist</string>
 	<key>Website</key>
 	<string>http://www.gofake1.net/projects/nightlight.html</string>
 </dict>

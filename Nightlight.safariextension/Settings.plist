@@ -42,11 +42,21 @@
 	</dict>
 	<dict>
 		<key>DefaultValue</key>
-		<string>netflix.com</string>
+		<string>netflix.com,youtube.com</string>
 		<key>Key</key>
 		<string>blacklist</string>
 		<key>Title</key>
 		<string>Blacklist</string>
+		<key>Type</key>
+		<string>TextField</string>
+	</dict>
+	<dict>
+		<key>DefaultValue</key>
+		<string></string>
+		<key>Key</key>
+		<string>aggressiveList</string>
+		<key>Title</key>
+		<string>Aggressive</string>
 		<key>Type</key>
 		<string>TextField</string>
 	</dict>
