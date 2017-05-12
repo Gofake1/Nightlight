@@ -215,7 +215,7 @@ function nightlight(mode, element) {
           newBgColor = BlackColor();
         }
         element.style.backgroundImage = 'none';
-        element.style.backgroundColor = newBgColor.rgbString();
+        element.style.setProperty('background-color', newBgColor.rgbString(), 'important');
         element.style.color = newTextColor.rgbString();
         break;
       case 'IMG':
