@@ -230,7 +230,7 @@ function nightlight(mode, element) {
           // invertText
           return;
         }
-        element.style.backgroundColor = newBgColor.rgbString();
+        element.style.setProperty('background-color', newBgColor.rgbString(), 'important');
         if (!newBgColor.isLight()) {
           element.style.color = newTextColor.rgbString();
         }
