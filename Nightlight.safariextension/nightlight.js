@@ -1,16 +1,27 @@
-var DARKEN_IMAGES    = false;
-var IGNORED_ELEMENTS = ['CANVAS','VIDEO','SCRIPT'];
-var WEBPAGE_COLORS   = {
+var DARKEN_IMAGES = false;
+var IGNORED_ELEMENTS = ['VIDEO','SCRIPT'];
+var WEBPAGE_COLORS  = {
   bgColors:   new Map(),
   textColors: new Map()
 };
-var STATE            = {
+
+var HOTKEY = {
+  NONE:     '0',
+  OPTION_N: '1',
+  OPTION_O: '2'
+};
+var USER_HOTKEY_KEYCODE = null;
+
+var STATE = {
   ACTIVE_NOT_DARKENED:   0,
   ACTIVE_DARKENED:       1,
   INACTIVE_DARKENED:     2,
   INACTIVE_NOT_DARKENED: 3
 };
-var CURRENT_STATE    = STATE.INACTIVE_NOT_DARKENED;
+var CURRENT_STATE = STATE.INACTIVE_NOT_DARKENED;
+
+var NIGHTLIGHT_ON  = true;
+var NIGHTLIGHT_OFF = false;
 
 function Color(r, g, b, a) {
   this.r = r;
@@ -185,7 +196,7 @@ function nightlight(mode, element) {
     return;
   }
 
-  if (mode == 'on') {
+  if (mode == NIGHTLIGHT_ON) {
     var style        = getComputedStyle(element);
     var oldBgColor   = ColorFromStr(style.backgroundColor);
     var oldTextColor = ColorFromStr(style.color);
@@ -263,7 +274,7 @@ function update(isOn) {
   switch (CURRENT_STATE) {
     case STATE.ACTIVE_NOT_DARKENED:
       makeWebpageColors(document.body);
-      nightlight('on', document.body);
+      nightlight(NIGHTLIGHT_ON, document.body);
       CURRENT_STATE = STATE.ACTIVE_DARKENED;
       break;
     case STATE.ACTIVE_DARKENED:
@@ -290,6 +301,17 @@ function handleMessage(event) {
   switch (event.name) {
     case 'toggleNightlight':
       DARKEN_IMAGES = event.message.darkenImages;
+      switch (event.message.hotkey) {
+        case HOTKEY.NONE:
+          USER_HOTKEY_KEYCODE = null;
+          break;
+        case HOTKEY.OPTION_N:
+          USER_HOTKEY_KEYCODE = 78;
+          break;
+        case HOTKEY.OPTION_O:
+          USER_HOTKEY_KEYCODE = 79;
+          break;
+      }
       update(event.message.isOn);
       break;
   }
@@ -300,11 +322,19 @@ function handleMutations(mutations) {
     mutation.addedNodes.forEach(function(addedNode) {
       makeWebpageColors(addedNode);
       if (CURRENT_STATE == (STATE.ACTIVE_DARKENED || STATE.ACTIVE_NOT_DARKENED)) {
-        nightlight('on', addedNode);
+        nightlight(NIGHTLIGHT_ON, addedNode);
       }
     });
   });
   safari.self.tab.dispatchMessage('webpageColors', WEBPAGE_COLORS);
+}
+
+function handleKeydown(event) {
+  if (event.altKey && event.keyCode == USER_HOTKEY_KEYCODE) {
+    console.log('FOO');
+    event.preventDefault();
+    safari.self.tab.dispatchMessage('requestToggleNightlight');
+  }
 }
 
 if (typeof(safari) == 'object') {
@@ -312,3 +342,4 @@ if (typeof(safari) == 'object') {
 }
 var observer = new MutationObserver(handleMutations);
 observer.observe(document.body, {childList: true, subtree: true});
+window.addEventListener('keydown', handleKeydown, false);

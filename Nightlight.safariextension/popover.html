@@ -170,6 +170,8 @@ function isWebpage(urlStr) {
   return true;
 }
 
+// Update popover state
+// postcondition: Sends message
 function toggleNightlight() {
   var isOn = safari.extension.settings.isOn;
   var url = safari.application.activeBrowserWindow.activeTab.url;
@@ -187,7 +189,8 @@ function toggleNightlight() {
       safari.application.activeBrowserWindow.activeTab.page.dispatchMessage(
         'toggleNightlight', {
           isOn:         isOn,
-          darkenImages: safari.extension.settings.darkenImages
+          darkenImages: safari.extension.settings.darkenImages,
+          hotkey:       safari.extension.settings.hotkey
         }
       );
     }
@@ -206,6 +209,10 @@ function handleMessage(event) {
   switch (event.name) {
     case 'webpageColors':
       displayColorGrid(event.message);
+      break;
+    case 'requestToggleNightlight':
+      safari.extension.settings.isOn = !safari.extension.settings.isOn;
+      toggleNightlight();
       break;
   }
 }
