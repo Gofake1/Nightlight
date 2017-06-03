@@ -4,19 +4,22 @@
     font-family: -apple-system, 'Helvetica';
     font-size: 12px;
   }
+  .black {
+    color: black;
+  }
+  .blue {
+    color: dodgerblue;
+  }
   .centered {
     margin: auto;
     text-align: center;
     width: 100%;
   }
-  .disabledText {
+  .gray {
     color: gray;
   }
-  .statusText {
-    color: gray;
-  }
-  .statusText b {
-    color: black;
+  .red {
+    color: red;
   }
   .tableCell {
     height: 15px;
@@ -26,86 +29,74 @@
     -webkit-appearance: none;
     background-color: transparent;
     border: none;
-    color: blue;
+  }
+  .textButton:disabled {
+    color: gray;
   }
 </style>
 </head>
 
 <body>
-<input id="isOnCheckbox" type="checkbox" onchange="handleIsOn(this)">Nightlight <span id="nightlightStatus" class="statusText"></span><br>
+<input id="isOnCheckbox" type="checkbox" onchange="handleIsOn(this)">Nightlight <span id="nightlightStatus" class="gray"></span><br>
 <div id="moreSettingsContainer">
-  <button id="moreSettingsButton" class="centered textButton" onclick="handleMoreSettingsVisibility()">More Settings</button><br>
+  <button id="moreSettingsButton" class="blue centered textButton" onclick="handleMoreSettingsVisibility()">More Settings</button>
+  <div id="moreSettings">
+    <input id="ignoreTabCheckbox" type="checkbox" onchange="handleIgnoreTab(this)"><span id="ignoreTabLabel">Ignore Tab</span><br>
+    <button id="aggressiveButton" class="red centered textButton" onclick="handleAggressive()">Aggressive</button><br>
+  </div>
 </div>
 <hr>
+<div id="warning"></div>
 <div id="colorGrid"></div>
 <script>
 var AGGRESSIVE_LIST = safari.extension.settings.aggressiveList.split(',');
-var BLACKLIST = safari.extension.settings.blacklist.split(',');
-var IGNORED_TABS = [];
-var MORE_SETTINGS_DIV = document.createElement('div');
-var MORE_SETTINGS_VISIBLE = false;
+var AGGRESSIVE_TABS = new Set();
+var BLACKLIST       = safari.extension.settings.blacklist.split(',');
+var IGNORED_TABS    = new Set();
 var WARNING = {
   NOT_WEBPAGE: "This is not a webpage and won't be modified.",
-  BLACKLISTED: "This page is blacklisted and won't be modified."
+  BLACKLISTED: "This page is blacklisted and won't be modified.",
+  TAB_IGNORED: "This tab is ignored and won't be modified.",
+  AGGRESSIVE:  "Refresh the page to reset."
 };
 
-MORE_SETTINGS_DIV.innerHTML = '<input id="ignoreTabCheckbox" type="checkbox" onchange="handleIgnoreTab(this)"><span id="ignoreTabLabel">Ignore Tab</span><br><input id="isAggressiveCheckbox" type="checkbox" onchange="handleIsAggressive(this)"><span id="isAggressiveLabel">Aggressive</span><br>';
+// DOM elements
+var AggressiveButton  = document.getElementById('aggressiveButton');
+var ColorGrid         = document.getElementById('colorGrid');
+var IgnoreTabCheckbox = document.getElementById('ignoreTabCheckbox');
+var IgnoreTabLabel    = document.getElementById('ignoreTabLabel');
+var IsOnCheckbox      = document.getElementById('isOnCheckbox');
+var MoreSettings      = document.getElementById('moreSettings');
+var NightlightStatus  = document.getElementById('nightlightStatus');
+var Warning           = document.getElementById('warning');
 
-function configureControls() {
-  if (safari.extension.settings.isOn === false) {
-      document.getElementById('ignoreTabCheckbox').disabled = true;
-      document.getElementById('ignoreTabLabel').className = 'disabledText';
-      document.getElementById('isAggressiveCheckbox').disabled = true;
-      document.getElementById('isAggressiveLabel').className = 'disabledText';
-    } else {
-      document.getElementById('ignoreTabCheckbox').disabled = false;
-      document.getElementById('ignoreTabLabel').className = '';
-      document.getElementById('isAggressiveCheckbox').disabled = false;
-      document.getElementById('isAggressiveLabel').className = '';
-    }
+// Initial view render
+MoreSettings.style.display = 'none';
+
+function renderIsOn(isOn) {
+  IsOnCheckbox.checked = isOn;
+  NightlightStatus.innerHTML = (isOn ? '<b class="black">On</b>' : 'Off');
 }
 
-function handleIsOn(input) {
-  safari.extension.settings.isOn = input.checked;
-  if (MORE_SETTINGS_VISIBLE) {
-    configureControls();
-  }
+function renderIgnoreTab(isChecked) {
+  IgnoreTabCheckbox.checked = isChecked;
 }
 
-function handleMoreSettingsVisibility() {
-  if (MORE_SETTINGS_VISIBLE) {
-    document.getElementById('moreSettingsContainer').removeChild(MORE_SETTINGS_DIV);
-    document.getElementById('moreSettingsButton').innerText = 'More Settings';
-    MORE_SETTINGS_VISIBLE = false;
+function renderIsAggressive(isDisabled) {
+  AggressiveButton.disabled = isDisabled;
+}
+
+function renderWarning(message) {
+  if (message === null) {
+    Warning.innerText = '';
   } else {
-    document.getElementById('moreSettingsContainer').appendChild(MORE_SETTINGS_DIV);
-    document.getElementById('moreSettingsButton').innerText = 'Hide Settings';
-    MORE_SETTINGS_VISIBLE = true;
-
-    configureControls();
+    Warning.innerText = message;
   }
 }
 
-function handleIgnoreTab(input) {
-  if (input.checked) {
-    console.log(safari.application.activeBrowserWindow.activeTab); //DEBUG
-    IGNORED_TABS.push(safari.application.activeBrowserWindow.activeTab);
-    document.getElementById('isAggressiveCheckbox').disabled = true;
-    document.getElementById('isAggressiveLabel').className = 'disabledText';
-  } else {
-    document.getElementById('isAggressiveCheckbox').disabled = false;
-    document.getElementById('isAggressiveLabel').className = '';
-  }
-}
-
-function handleIsAggressive(input) {
-  //AGGRESSIVE_LIST.push();
-}
-
-function displayColorGrid(colors) {
-  var colorGrid = document.getElementById('colorGrid');
-  while (colorGrid.firstChild) {
-    colorGrid.removeChild(colorGrid.firstChild);
+function renderColorGrid(colors) {
+  while (ColorGrid.firstChild) {
+    ColorGrid.removeChild(ColorGrid.firstChild);
   }
 
   var colorTable = document.createElement('table');
@@ -144,14 +135,55 @@ function displayColorGrid(colors) {
     colorTable.appendChild(colorRow);
   }
   
-  colorGrid.appendChild(colorTable);
+  ColorGrid.appendChild(colorTable);
 }
 
-function blacklistContains(urlStr) {
-  url = new URL(urlStr);
+function handleIsOn(input) {
+  safari.extension.settings.isOn = input.checked;
+}
+
+function handleMoreSettingsVisibility() {
+  if (MoreSettings.style.display == 'none') {
+    MoreSettings.style.display = 'block';
+  } else {
+    MoreSettings.style.display = 'none';
+  }
+}
+
+function handleIgnoreTab(input) {
+  if (input.checked) {
+    IGNORED_TABS.add(safari.application.activeBrowserWindow.activeTab);
+    renderWarning(WARNING.TAB_IGNORED);
+  } else {
+    IGNORED_TABS.delete(safari.application.activeBrowserWindow.activeTab);
+    renderWarning(null);
+  }
+  safari.application.activeBrowserWindow.activeTab.page.dispatchMessage(
+    'ignoreTabChanged', {
+      isOn: safari.extension.settings.isOn,
+      ignoreTab: input.checked
+    }
+  );
+}
+
+function handleAggressive() {
+  AGGRESSIVE_TABS.add(safari.application.activeBrowserWindow.activeTab);
+  renderIsAggressive(true);
+  renderWarning(WARNING.AGGRESSIVE);
+  safari.application.activeBrowserWindow.activeTab.page.dispatchMessage(
+    'beAggressive');
+}
+
+function listContainsHostname(list, urlStr) {
+  if (list.length == 1) {
+    if (list[0] === '') {
+      return false;
+    }
+  }
+  var url = new URL(urlStr);
   if (url) {
-    for (var i = 0; i < BLACKLIST.length; i++) {
-      if (url.hostname.includes(BLACKLIST[i])) {
+    for (var i = 0; i < list.length; i++) {
+      if (url.hostname.includes(list[i])) {
         return true;
       }
     }
@@ -172,47 +204,60 @@ function isWebpage(urlStr) {
 
 // Update popover state
 // postcondition: Sends message
-function toggleNightlight() {
-  var isOn = safari.extension.settings.isOn;
+function updateNightlight() {
+  var tab = safari.application.activeBrowserWindow.activeTab;
   var url = safari.application.activeBrowserWindow.activeTab.url;
+  var isOn = safari.extension.settings.isOn;
+  var isAggressive = listContainsHostname(AGGRESSIVE_LIST, url);
 
-  document.getElementById('isOnCheckbox').checked = isOn;
-  document.getElementById('nightlightStatus').innerHTML = (isOn ? '<b>On</b>' : 'Off');
-  document.getElementById('colorGrid').innerText = '';
-  
-  if (blacklistContains(url)) {
-    document.getElementById('colorGrid').innerText = WARNING.BLACKLISTED;
-  } else if (!isWebpage(url)) {
-    document.getElementById('colorGrid').innerText = WARNING.NOT_WEBPAGE;
-  } else {
-    if (safari.application.activeBrowserWindow.activeTab.page) {
-      safari.application.activeBrowserWindow.activeTab.page.dispatchMessage(
-        'toggleNightlight', {
-          isOn:         isOn,
-          darkenImages: safari.extension.settings.darkenImages,
-          hotkey:       safari.extension.settings.hotkey
-        }
-      );
-    }
+  if (isAggressive) {
+    AGGRESSIVE_TABS.add(tab);
+    renderWarning(WARNING.AGGRESSIVE);
   }
+  
+  if (listContainsHostname(BLACKLIST, url)) {
+    renderWarning(WARNING.BLACKLISTED);
+  } else if (!isWebpage(url)) {
+    renderWarning(WARNING.NOT_WEBPAGE);
+  } else if (IGNORED_TABS.has(tab)) {
+    renderWarning(WARNING.TAB_IGNORED);
+  } else {
+    renderWarning(null);
+    safari.application.activeBrowserWindow.activeTab.page.dispatchMessage(
+      'state', {
+        isOn:         isOn,
+        isAggressive: isAggressive,
+        darkenImages: safari.extension.settings.darkenImages,
+        hotkey:       safari.extension.settings.hotkey
+      }
+    );
+  }
+
+  renderIsOn(isOn);
+  renderIgnoreTab(IGNORED_TABS.has(tab));
+  renderIsAggressive(AGGRESSIVE_TABS.has(tab));
 }
 
 function handleNavigate(event) {
-  toggleNightlight();
+  AGGRESSIVE_TABS.delete(safari.application.activeBrowserWindow.activeTab);
+  updateNightlight();
 }
 
 function handleActivate(event) {
-  toggleNightlight();
+  updateNightlight();
 }
 
 function handleMessage(event) {
   switch (event.name) {
     case 'webpageColors':
-      displayColorGrid(event.message);
+      renderColorGrid(event.message);
+      break;
+    case 'pageReload':
+      AGGRESSIVE_TABS.delete(safari.application.activeBrowserWindow.activeTab);
       break;
     case 'requestToggleNightlight':
       safari.extension.settings.isOn = !safari.extension.settings.isOn;
-      toggleNightlight();
+      updateNightlight();
       break;
   }
 }
@@ -220,7 +265,10 @@ function handleMessage(event) {
 function handleSettings(event) {
   switch (event.key) {
     case 'isOn':
-      toggleNightlight();
+      updateNightlight();
+      break;
+    case 'aggressiveList':
+      AGGRESSIVE_LIST = safari.extension.settings.aggressiveList.split(',');
       break;
     case 'blacklist':
       BLACKLIST = safari.extension.settings.blacklist.split(',');
