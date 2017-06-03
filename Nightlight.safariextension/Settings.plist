@@ -51,8 +51,6 @@
 		<string>TextField</string>
 	</dict>
 	<dict>
-		<key>DefaultValue</key>
-		<string></string>
 		<key>Key</key>
 		<string>aggressiveList</string>
 		<key>Title</key>

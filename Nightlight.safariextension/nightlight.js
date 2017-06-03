@@ -1,9 +1,8 @@
 var DARKEN_IMAGES = false;
+var IS_AGGRESSIVE = false;
+
 var IGNORED_ELEMENTS = ['VIDEO','SCRIPT'];
-var WEBPAGE_COLORS  = {
-  bgColors:   new Map(),
-  textColors: new Map()
-};
+var WEBPAGE_COLORS = null;
 
 var HOTKEY = {
   NONE:     '0',
@@ -16,7 +15,8 @@ var STATE = {
   ACTIVE_NOT_DARKENED:   0,
   ACTIVE_DARKENED:       1,
   INACTIVE_DARKENED:     2,
-  INACTIVE_NOT_DARKENED: 3
+  INACTIVE_NOT_DARKENED: 3,
+  NEEDS_AGGRESSIVE:      4
 };
 var CURRENT_STATE = STATE.INACTIVE_NOT_DARKENED;
 
@@ -229,6 +229,11 @@ function nightlight(mode, element) {
         element.style.setProperty('background-color', newBgColor.rgbString(), 'important');
         element.style.color = newTextColor.rgbString();
         break;
+      case 'CANVAS':
+        if (IS_AGGRESSIVE) {
+          element.parentNode.removeChild(element);
+        }
+        break;
       case 'IMG':
         element.style.backgroundColor = GrayColor();
         if (DARKEN_IMAGES) {
@@ -237,8 +242,11 @@ function nightlight(mode, element) {
         break;
       case 'DIV':
       case 'SPAN':
-        if (style.backgroundImage != 'none') {
-          // invertText
+        if (IS_AGGRESSIVE) {
+          if (style.borderWidth != '0px') {
+            element.style.borderColor = newTextColor.rgbString();
+          }
+        } else if (style.backgroundImage != 'none') {
           return;
         }
         element.style.setProperty('background-color', newBgColor.rgbString(), 'important');
@@ -247,12 +255,15 @@ function nightlight(mode, element) {
         }
         break;
       default:
+        if (IS_AGGRESSIVE) {
+          element.style.backgroundImage = 'none';
+        }
         element.style.backgroundColor = newBgColor.rgbString();
         element.style.color = newTextColor.rgbString();
         break;
     }
 
-  } else if (mode == 'off') {
+  } else if (mode == NIGHTLIGHT_OFF) {
     switch (element.tagName) {
       case 'IMG':
         element.style.filter = null;
@@ -273,7 +284,13 @@ function nightlight(mode, element) {
 function update(isOn) {
   switch (CURRENT_STATE) {
     case STATE.ACTIVE_NOT_DARKENED:
-      makeWebpageColors(document.body);
+      if (WEBPAGE_COLORS === null) {
+        WEBPAGE_COLORS = {
+          bgColors:   new Map(),
+          textColors: new Map()
+        };
+        makeWebpageColors(document.body);
+      }
       nightlight(NIGHTLIGHT_ON, document.body);
       CURRENT_STATE = STATE.ACTIVE_DARKENED;
       break;
@@ -284,7 +301,7 @@ function update(isOn) {
       }
       break;
     case STATE.INACTIVE_DARKENED:
-      nightlight('off', document.body);
+      nightlight(NIGHTLIGHT_OFF, document.body);
       CURRENT_STATE = STATE.INACTIVE_NOT_DARKENED;
       break;
     case STATE.INACTIVE_NOT_DARKENED:
@@ -293,14 +310,19 @@ function update(isOn) {
         update(isOn);
       }
       break;
+    case STATE.NEEDS_AGGRESSIVE:
+      nightlight(NIGHTLIGHT_ON, document.body);
+      CURRENT_STATE = STATE.ACTIVE_DARKENED;
+      break;
   }
   safari.self.tab.dispatchMessage('webpageColors', WEBPAGE_COLORS);
 }
 
 function handleMessage(event) {
   switch (event.name) {
-    case 'toggleNightlight':
+    case 'state':
       DARKEN_IMAGES = event.message.darkenImages;
+      IS_AGGRESSIVE = event.message.isAggressive;
       switch (event.message.hotkey) {
         case HOTKEY.NONE:
           USER_HOTKEY_KEYCODE = null;
@@ -314,24 +336,33 @@ function handleMessage(event) {
       }
       update(event.message.isOn);
       break;
+    case 'ignoreTabChanged':
+      update(!event.message.ignoreTab);
+      break;
+    case 'beAggressive':
+      IS_AGGRESSIVE = true;
+      CURRENT_STATE = STATE.NEEDS_AGGRESSIVE;
+      update(true);
+      break;
   }
 }
 
 function handleMutations(mutations) {
   mutations.forEach(function(mutation) {
     mutation.addedNodes.forEach(function(addedNode) {
-      makeWebpageColors(addedNode);
       if (CURRENT_STATE == (STATE.ACTIVE_DARKENED || STATE.ACTIVE_NOT_DARKENED)) {
         nightlight(NIGHTLIGHT_ON, addedNode);
       }
     });
   });
-  safari.self.tab.dispatchMessage('webpageColors', WEBPAGE_COLORS);
+}
+
+function handleReload(event) {
+  safari.self.tab.dispatchMessage('pageReload');
 }
 
 function handleKeydown(event) {
   if (event.altKey && event.keyCode == USER_HOTKEY_KEYCODE) {
-    console.log('FOO');
     event.preventDefault();
     safari.self.tab.dispatchMessage('requestToggleNightlight');
   }
@@ -342,4 +373,5 @@ if (typeof(safari) == 'object') {
 }
 var observer = new MutationObserver(handleMutations);
 observer.observe(document.body, {childList: true, subtree: true});
+window.onbeforeunload = handleReload;
 window.addEventListener('keydown', handleKeydown, false);
