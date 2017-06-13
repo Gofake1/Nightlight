@@ -49,9 +49,15 @@
 <div id="warning"></div>
 <div id="colorGrid"></div>
 <script>
-var AGGRESSIVE_LIST = safari.extension.settings.aggressiveList.split(',');
+var AGGRESSIVE_LIST = [];
+if (safari.extension.settings.aggressiveList !== undefined) {
+  safari.extension.settings.aggressiveList.split(',');
+}
 var AGGRESSIVE_TABS = new Set();
-var BLACKLIST       = safari.extension.settings.blacklist.split(',');
+var BLACKLIST       = [];
+if (safari.extension.settings.blacklist !== undefined) {
+  safari.extension.settings.blacklist.split(',');
+}
 var IGNORED_TABS    = new Set();
 var WARNING = {
   NOT_WEBPAGE: "This is not a webpage and won't be modified.",
@@ -95,6 +101,9 @@ function renderWarning(message) {
 }
 
 function renderColorGrid(colors) {
+  if (colors === null) {
+    return;
+  }
   while (ColorGrid.firstChild) {
     ColorGrid.removeChild(ColorGrid.firstChild);
   }
