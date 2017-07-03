@@ -80,6 +80,8 @@
 			<string>None</string>
 			<string>⌥N</string>
 			<string>⌥O</string>
+			<string>⌃N</string>
+			<string>⌃O</string>
 		</array>
 		<key>Type</key>
 		<string>PopUpButton</string>
@@ -88,6 +90,8 @@
 			<string>0</string>
 			<string>1</string>
 			<string>2</string>
+			<string>3</string>
+			<string>4</string>
 		</array>
 	</dict>
 </array>

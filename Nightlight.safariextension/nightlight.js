@@ -5,11 +5,18 @@ var IGNORED_ELEMENTS = ['VIDEO','SCRIPT'];
 var WEBPAGE_COLORS = null;
 
 var HOTKEY = {
-  NONE:     '0',
-  OPTION_N: '1',
-  OPTION_O: '2'
+  NONE:      '0',
+  OPTION_N:  '1',
+  OPTION_O:  '2',
+  CONTROL_N: '3',
+  CONTROL_O: '4'
 };
-var USER_HOTKEY_KEYCODE = null;
+var HOTKEY_KEYCODE1 = {
+  OPTION:  0,
+  CONTROL: 1
+};
+var USER_HOTKEY_KEYCODE1 = null;
+var USER_HOTKEY_KEYCODE2 = null;
 
 var STATE = {
   ACTIVE_NOT_DARKENED:   0,
@@ -332,13 +339,24 @@ function handleMessage(event) {
       IS_AGGRESSIVE = event.message.isAggressive;
       switch (event.message.hotkey) {
         case HOTKEY.NONE:
-          USER_HOTKEY_KEYCODE = null;
+          USER_HOTKEY_KEYCODE1 = null;
+          USER_HOTKEY_KEYCODE2 = null;
           break;
         case HOTKEY.OPTION_N:
-          USER_HOTKEY_KEYCODE = 78;
+          USER_HOTKEY_KEYCODE1 = HOTKEY_KEYCODE1.OPTION;
+          USER_HOTKEY_KEYCODE2 = 78;
           break;
         case HOTKEY.OPTION_O:
-          USER_HOTKEY_KEYCODE = 79;
+          USER_HOTKEY_KEYCODE1 = HOTKEY_KEYCODE1.OPTION;
+          USER_HOTKEY_KEYCODE2 = 79;
+          break;
+        case HOTKEY.CONTROL_N:
+          USER_HOTKEY_KEYCODE1 = HOTKEY_KEYCODE1.CONTROL;
+          USER_HOTKEY_KEYCODE2 = 78;
+          break;
+        case HOTKEY.CONTROL_O:
+          USER_HOTKEY_KEYCODE1 = HOTKEY_KEYCODE1.CONTROL;
+          USER_HOTKEY_KEYCODE2 = 79;
           break;
       }
       update(event.message.isOn);
@@ -373,7 +391,13 @@ function handleReload(event) {
 }
 
 function handleKeydown(event) {
-  if (event.altKey && event.keyCode == USER_HOTKEY_KEYCODE) {
+  var userHotkey1Pressed = false;
+  if (USER_HOTKEY_KEYCODE1 == HOTKEY_KEYCODE1.OPTION) {
+    userHotkey1Pressed = event.altKey;
+  } else if (USER_HOTKEY_KEYCODE1 == HOTKEY_KEYCODE1.CONTROL) {
+    userHotkey1Pressed = event.ctrlKey;
+  }
+  if (userHotkey1Pressed && event.keyCode == USER_HOTKEY_KEYCODE2) {
     event.preventDefault();
     safari.self.tab.dispatchMessage('requestToggleNightlight');
   }
