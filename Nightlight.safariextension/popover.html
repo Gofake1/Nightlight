@@ -37,12 +37,12 @@
 </head>
 
 <body>
-<input id="isOnCheckbox" type="checkbox" onchange="handleIsOn(this)">Nightlight <span id="nightlightStatus" class="gray"></span><br>
+<input id="isOnCheckbox" type="checkbox" tabindex="-1" onchange="handleIsOn(this)">Nightlight <span id="nightlightStatus" class="gray"></span><br>
 <div id="moreSettingsContainer">
-  <button id="moreSettingsButton" class="blue centered textButton" onclick="handleMoreSettingsVisibility()">More Settings</button>
+  <button id="moreSettingsButton" class="blue centered textButton" tabindex="-1" onclick="handleMoreSettingsVisibility()">More Settings</button>
   <div id="moreSettings">
-    <input id="ignoreTabCheckbox" type="checkbox" onchange="handleIgnoreTab(this)"><span id="ignoreTabLabel">Ignore Tab</span><br>
-    <button id="aggressiveButton" class="red centered textButton" onclick="handleAggressive()">Aggressive</button><br>
+    <input id="ignoreTabCheckbox" type="checkbox" tabindex="-1" onchange="handleIgnoreTab(this)"><span id="ignoreTabLabel">Ignore Tab</span><br>
+    <button id="aggressiveButton" class="red centered textButton" tabindex="-1" onclick="handleAggressive()">Aggressive</button><br>
   </div>
 </div>
 <hr>
@@ -51,14 +51,15 @@
 <script>
 var AGGRESSIVE_LIST = [];
 if (safari.extension.settings.aggressiveList !== undefined) {
-  safari.extension.settings.aggressiveList.split(',');
+  AGGRESSIVE_LIST = safari.extension.settings.aggressiveList.split(',');
 }
-var AGGRESSIVE_TABS = new Set();
 var BLACKLIST       = [];
 if (safari.extension.settings.blacklist !== undefined) {
-  safari.extension.settings.blacklist.split(',');
+  BLACKLIST = safari.extension.settings.blacklist.split(',');
 }
+var AGGRESSIVE_TABS = new Set();
 var IGNORED_TABS    = new Set();
+var TAB_COLORS      = {};
 var WARNING = {
   NOT_WEBPAGE: "This is not a webpage and won't be modified.",
   BLACKLISTED: "This page is blacklisted and won't be modified.",
@@ -101,11 +102,11 @@ function renderWarning(message) {
 }
 
 function renderColorGrid(colors) {
-  if (colors === null) {
-    return;
-  }
   while (ColorGrid.firstChild) {
     ColorGrid.removeChild(ColorGrid.firstChild);
+  }
+  if (colors === null) {
+    return;
   }
 
   var colorTable = document.createElement('table');

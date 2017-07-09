@@ -14,6 +14,6 @@ Install from source using the [Extension Builder](https://developer.apple.com/li
 Install from source using [developer mode](https://developer.chrome.com/extensions/getstarted#unpacked), or get it from the <s>[Chrome Store]()</s>.
 
 #### Mobile
-Try out the [bookmarklet](https://gofake1.net/projects/nightlight.html#bookmarklet)
+Try out the [bookmarklet](https://gofake1.net/projects/nightlight.html#bookmarklet).
 
 *This project is available under the MIT License.*

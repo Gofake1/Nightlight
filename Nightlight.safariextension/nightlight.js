@@ -51,7 +51,7 @@ function Color(r, g, b, a) {
   this.isTransparent = function() {
     return this.a === 0;
   };
-  /// Return saturation from HSV color model
+  /// Returns saturation from HSV color model
   this.saturation = function() {
     var max = Math.max(this.r, Math.max(this.g, this.b));
     var min = Math.min(this.r, Math.min(this.g, this.b));
@@ -144,12 +144,10 @@ function makeWebpageColors(element) {
   ) {
     if (oldBgColor.isColorful()) {
       newBgColor = oldBgColor.shade(-20);
+    } else if (oldBgColor.isLight()) {
+      newBgColor = oldBgColor.invert();
     } else {
-      if (oldBgColor.isLight()) {
-        newBgColor = oldBgColor.invert();
-      } else {
-        newBgColor = oldBgColor.shade(-50);
-      }
+      newBgColor = oldBgColor.shade(-50);
     }
     WEBPAGE_COLORS.bgColors.set(
       oldBgColor.rgbString(), newBgColor.rgbString()
@@ -234,7 +232,7 @@ function nightlight(mode, element) {
         }
         element.style.backgroundImage = 'none';
         element.style.setProperty('background-color', newBgColor.rgbString(), 'important');
-        element.style.color = newTextColor.rgbString();
+        element.style.setProperty('color', newTextColor.rgbString(), 'important');
         break;
       case 'CANVAS':
         if (IS_AGGRESSIVE) {
@@ -242,7 +240,6 @@ function nightlight(mode, element) {
         }
         break;
       case 'IMG':
-        element.style.backgroundColor = GrayColor();
         if (DARKEN_IMAGES) {
           element.style.filter = 'brightness(70%)';
         }
@@ -257,13 +254,12 @@ function nightlight(mode, element) {
       case 'DIV':
       case 'SPAN':
         if (IS_AGGRESSIVE) {
-          if (style.borderWidth != '0px') {
-            element.style.borderColor = newTextColor.rgbString();
-          }
+          element.style.borderWidth = '0px';
         } else if (style.backgroundImage != 'none') {
           return;
         }
         element.style.setProperty('background-color', newBgColor.rgbString(), 'important');
+        element.style.borderColor = newTextColor.rgbString();
         if (!newBgColor.isLight()) {
           element.style.color = newTextColor.rgbString();
         }
