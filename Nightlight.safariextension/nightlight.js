@@ -1,24 +1,31 @@
 var DARKEN_IMAGES = false;
 var IS_AGGRESSIVE = false;
 
-var IGNORED_ELEMENTS = ['VIDEO','SCRIPT'];
+const IGNORED_ELEMENTS = ['VIDEO','SCRIPT'];
 var WEBPAGE_COLORS = null;
 
-var HOTKEY = {
-  NONE:      '0',
-  OPTION_N:  '1',
-  OPTION_O:  '2',
-  CONTROL_N: '3',
-  CONTROL_O: '4'
+const HOTKEY = {
+  NONE:            '0',
+  OPTION_N:        '1',
+  OPTION_O:        '2',
+  CONTROL_N:       '3',
+  CONTROL_O:       '4',
+  SHIFT_COMMAND_F: '5'
 };
-var HOTKEY_KEYCODE1 = {
-  OPTION:  0,
-  CONTROL: 1
+const HOTKEY_KEYCODE1 = {
+  CONTROL:       0,
+  OPTION:        1,
+  SHIFT_COMMAND: 2
+};
+const HOTKEY_KEYCODE2 = {
+  F: 70,
+  N: 78,
+  O: 79
 };
 var USER_HOTKEY_KEYCODE1 = null;
 var USER_HOTKEY_KEYCODE2 = null;
 
-var STATE = {
+const STATE = {
   ACTIVE_NOT_DARKENED:   0,
   ACTIVE_DARKENED:       1,
   INACTIVE_DARKENED:     2,
@@ -27,8 +34,8 @@ var STATE = {
 };
 var CURRENT_STATE = STATE.INACTIVE_NOT_DARKENED;
 
-var NIGHTLIGHT_ON  = true;
-var NIGHTLIGHT_OFF = false;
+const NIGHTLIGHT_ON  = true;
+const NIGHTLIGHT_OFF = false;
 
 function Color(r, g, b, a) {
   this.r = r;
@@ -259,17 +266,17 @@ function nightlight(mode, element) {
           return;
         }
         element.style.setProperty('background-color', newBgColor.rgbString(), 'important');
-        element.style.borderColor = newTextColor.rgbString();
+        element.style.setProperty('border-color', newTextColor.rgbString(), 'important');
         if (!newBgColor.isLight()) {
-          element.style.color = newTextColor.rgbString();
+          element.style.setProperty('color', newTextColor.rgbString(), 'important');
         }
         break;
       default:
         if (IS_AGGRESSIVE) {
           element.style.backgroundImage = 'none';
         }
-        element.style.backgroundColor = newBgColor.rgbString();
-        element.style.color = newTextColor.rgbString();
+        element.style.setProperty('background-color', newBgColor.rgbString(), 'important');
+        element.style.setProperty('color', newTextColor.rgbString(), 'important');
         break;
     }
 
@@ -280,6 +287,7 @@ function nightlight(mode, element) {
         break;
       default:
         element.style.backgroundColor = null;
+        element.style.borderColor = null;
         element.style.color = null;
     }
   }
@@ -328,40 +336,49 @@ function update(isOn) {
   safari.self.tab.dispatchMessage('webpageColors', WEBPAGE_COLORS);
 }
 
+function updateHotkey(hotkey) {
+  switch (hotkey) {
+  case HOTKEY.NONE:
+    USER_HOTKEY_KEYCODE1 = null;
+    USER_HOTKEY_KEYCODE2 = null;
+    break;
+  case HOTKEY.OPTION_N:
+    USER_HOTKEY_KEYCODE1 = HOTKEY_KEYCODE1.OPTION;
+    USER_HOTKEY_KEYCODE2 = HOTKEY_KEYCODE2.N;
+    break;
+  case HOTKEY.OPTION_O:
+    USER_HOTKEY_KEYCODE1 = HOTKEY_KEYCODE1.OPTION;
+    USER_HOTKEY_KEYCODE2 = HOTKEY_KEYCODE2.O;
+    break;
+  case HOTKEY.CONTROL_N:
+    USER_HOTKEY_KEYCODE1 = HOTKEY_KEYCODE1.CONTROL;
+    USER_HOTKEY_KEYCODE2 = HOTKEY_KEYCODE2.N;
+    break;
+  case HOTKEY.CONTROL_O:
+    USER_HOTKEY_KEYCODE1 = HOTKEY_KEYCODE1.CONTROL;
+    USER_HOTKEY_KEYCODE2 = HOTKEY_KEYCODE2.O;
+    break;
+  case HOTKEY.SHIFT_COMMAND_F:
+    USER_HOTKEY_KEYCODE1 = HOTKEY_KEYCODE1.SHIFT_COMMAND;
+    USER_HOTKEY_KEYCODE2 = HOTKEY_KEYCODE2.F;
+    break;
+  }
+}
+
 function handleMessage(event) {
   switch (event.name) {
     case 'state':
-      DARKEN_IMAGES = event.message.darkenImages;
-      IS_AGGRESSIVE = event.message.isAggressive;
-      switch (event.message.hotkey) {
-        case HOTKEY.NONE:
-          USER_HOTKEY_KEYCODE1 = null;
-          USER_HOTKEY_KEYCODE2 = null;
-          break;
-        case HOTKEY.OPTION_N:
-          USER_HOTKEY_KEYCODE1 = HOTKEY_KEYCODE1.OPTION;
-          USER_HOTKEY_KEYCODE2 = 78;
-          break;
-        case HOTKEY.OPTION_O:
-          USER_HOTKEY_KEYCODE1 = HOTKEY_KEYCODE1.OPTION;
-          USER_HOTKEY_KEYCODE2 = 79;
-          break;
-        case HOTKEY.CONTROL_N:
-          USER_HOTKEY_KEYCODE1 = HOTKEY_KEYCODE1.CONTROL;
-          USER_HOTKEY_KEYCODE2 = 78;
-          break;
-        case HOTKEY.CONTROL_O:
-          USER_HOTKEY_KEYCODE1 = HOTKEY_KEYCODE1.CONTROL;
-          USER_HOTKEY_KEYCODE2 = 79;
-          break;
+      if (event.message.darkenImages !== undefined) {
+        DARKEN_IMAGES = event.message.darkenImages;
       }
-      update(event.message.isOn);
-      break;
-    case 'ignoreTabChanged':
-      if (event.message.isOn && event.message.ignoreTab) {
-        update(false);
-      } else if (event.message.isOn && !event.message.ignoreTab) {
-        update(true);
+      if (event.message.isAggressive !== undefined) {
+        IS_AGGRESSIVE = event.message.isAggressive;
+      }
+      if (event.message.hotkey !== undefined) {
+        updateHotkey(event.message.hotkey);
+      }
+      if (event.message.isOn !== undefined) {
+        update(event.message.isOn);
       }
       break;
     case 'beAggressive':
@@ -392,6 +409,8 @@ function handleKeydown(event) {
     userHotkey1Pressed = event.altKey;
   } else if (USER_HOTKEY_KEYCODE1 == HOTKEY_KEYCODE1.CONTROL) {
     userHotkey1Pressed = event.ctrlKey;
+  } else if (USER_HOTKEY_KEYCODE1 == HOTKEY_KEYCODE1.SHIFT_COMMAND) {
+    userHotkey1Pressed = event.shiftKey && event.metaKey;
   }
   if (userHotkey1Pressed && event.keyCode == USER_HOTKEY_KEYCODE2) {
     event.preventDefault();
@@ -403,6 +422,6 @@ if (typeof(safari) == 'object') {
   safari.self.addEventListener('message', handleMessage, false);
 }
 var observer = new MutationObserver(handleMutations);
-observer.observe(document.body, {childList: true, subtree: true});
+observer.observe(document.body, { childList: true, subtree: true });
 window.onbeforeunload = handleReload;
 window.addEventListener('keydown', handleKeydown, false);

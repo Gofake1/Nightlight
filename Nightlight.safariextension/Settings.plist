@@ -82,6 +82,7 @@
 			<string>⌥O</string>
 			<string>⌃N</string>
 			<string>⌃O</string>
+			<string>⇧⌘F</string>
 		</array>
 		<key>Type</key>
 		<string>PopUpButton</string>
@@ -92,6 +93,7 @@
 			<string>2</string>
 			<string>3</string>
 			<string>4</string>
+			<string>5</string>
 		</array>
 	</dict>
 </array>

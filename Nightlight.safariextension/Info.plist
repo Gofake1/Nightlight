@@ -5,7 +5,7 @@
 	<key>Author</key>
 	<string>Gofake1</string>
 	<key>Builder Version</key>
-	<string>13604.1.27.0.1</string>
+	<string>13605.1.2</string>
 	<key>CFBundleDisplayName</key>
 	<string>Nightlight</string>
 	<key>CFBundleIdentifier</key>
@@ -13,9 +13,9 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleShortVersionString</key>
-	<string>0.1.5</string>
+	<string>0.1.6</string>
 	<key>CFBundleVersion</key>
-	<string>0.1.5</string>
+	<string>0.1.6</string>
 	<key>Chrome</key>
 	<dict>
 		<key>Database Quota</key>
@@ -80,8 +80,8 @@
 		</dict>
 	</dict>
 	<key>Update Manifest URL</key>
-	<string>http://gofake1.net/files/nightlight_update.plist</string>
+	<string>https://gofake1.net/files/nightlight_update.plist</string>
 	<key>Website</key>
-	<string>http://www.gofake1.net/projects/nightlight.html</string>
+	<string>https://www.gofake1.net/projects/nightlight.html</string>
 </dict>
 </plist>

@@ -53,7 +53,7 @@ var AGGRESSIVE_LIST = [];
 if (safari.extension.settings.aggressiveList !== undefined) {
   AGGRESSIVE_LIST = safari.extension.settings.aggressiveList.split(',');
 }
-var BLACKLIST       = [];
+var BLACKLIST = [];
 if (safari.extension.settings.blacklist !== undefined) {
   BLACKLIST = safari.extension.settings.blacklist.split(',');
 }
@@ -163,17 +163,10 @@ function handleMoreSettingsVisibility() {
 function handleIgnoreTab(input) {
   if (input.checked) {
     IGNORED_TABS.add(safari.application.activeBrowserWindow.activeTab);
-    renderWarning(WARNING.TAB_IGNORED);
   } else {
     IGNORED_TABS.delete(safari.application.activeBrowserWindow.activeTab);
-    renderWarning(null);
   }
-  safari.application.activeBrowserWindow.activeTab.page.dispatchMessage(
-    'ignoreTabChanged', {
-      isOn: safari.extension.settings.isOn,
-      ignoreTab: input.checked
-    }
-  );
+  updateNightlight();
 }
 
 function handleAggressive() {
@@ -219,6 +212,7 @@ function updateNightlight() {
   var url = safari.application.activeBrowserWindow.activeTab.url;
   var isOn = safari.extension.settings.isOn;
   var isAggressive = listContainsHostname(AGGRESSIVE_LIST, url);
+  var isIgnored = IGNORED_TABS.has(tab);
 
   if (isAggressive) {
     AGGRESSIVE_TABS.add(tab);
@@ -227,10 +221,12 @@ function updateNightlight() {
   
   if (listContainsHostname(BLACKLIST, url)) {
     renderWarning(WARNING.BLACKLISTED);
+  } else if (isIgnored) {
+    renderWarning(WARNING.TAB_IGNORED);
+    safari.application.activeBrowserWindow.activeTab.page.dispatchMessage(
+      'state', { isOn: false } );
   } else if (!isWebpage(url)) {
     renderWarning(WARNING.NOT_WEBPAGE);
-  } else if (IGNORED_TABS.has(tab)) {
-    renderWarning(WARNING.TAB_IGNORED);
   } else {
     renderWarning(null);
     safari.application.activeBrowserWindow.activeTab.page.dispatchMessage(
@@ -244,7 +240,7 @@ function updateNightlight() {
   }
 
   renderIsOn(isOn);
-  renderIgnoreTab(IGNORED_TABS.has(tab));
+  renderIgnoreTab(isIgnored);
   renderIsAggressive(AGGRESSIVE_TABS.has(tab));
 }
 
