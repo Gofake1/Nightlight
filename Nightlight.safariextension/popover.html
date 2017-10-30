@@ -49,23 +49,25 @@
 <div id="warning"></div>
 <div id="colorGrid"></div>
 <script>
-var AGGRESSIVE_LIST = [];
-if (safari.extension.settings.aggressiveList !== undefined) {
-  AGGRESSIVE_LIST = safari.extension.settings.aggressiveList.split(',');
-}
-var BLACKLIST = [];
-if (safari.extension.settings.blacklist !== undefined) {
-  BLACKLIST = safari.extension.settings.blacklist.split(',');
-}
-var AGGRESSIVE_TABS = new Set();
-var IGNORED_TABS    = new Set();
-var TAB_COLORS      = {};
-var WARNING = {
+const WARNING = {
   NOT_WEBPAGE: "This is not a webpage and won't be modified.",
   BLACKLISTED: "This page is blacklisted and won't be modified.",
   TAB_IGNORED: "This tab is ignored and won't be modified.",
   AGGRESSIVE:  "Refresh the page to reset."
 };
+
+function makeList(str) {
+  if (str !== undefined) {
+    return str.split(',').map(function(s) { return s.trim(); });
+  }
+  return [];
+}
+
+var AGGRESSIVE_LIST = makeList(safari.extension.settings.aggressiveList);
+var BLACKLIST       = makeList(safari.extension.settings.blacklist);
+var OBSERVE_LIST    = makeList(safari.extension.settings.observeList);
+var AGGRESSIVE_TABS = new Set();
+var IGNORED_TABS    = new Set();
 
 // DOM elements
 var AggressiveButton  = document.getElementById('aggressiveButton');
@@ -85,7 +87,7 @@ function renderIsOn(isOn) {
   NightlightStatus.innerHTML = (isOn ? '<b class="black">On</b>' : 'Off');
 }
 
-function renderIgnoreTab(isChecked) {
+function renderIsIgnored(isChecked) {
   IgnoreTabCheckbox.checked = isChecked;
 }
 
@@ -160,6 +162,7 @@ function handleMoreSettingsVisibility() {
   }
 }
 
+// postcondition: Sends message
 function handleIgnoreTab(input) {
   if (input.checked) {
     IGNORED_TABS.add(safari.application.activeBrowserWindow.activeTab);
@@ -182,6 +185,9 @@ function listContainsHostname(list, urlStr) {
     if (list[0] === '') {
       return false;
     }
+  }
+  if (urlStr === '') {
+    return false;
   }
   var url = new URL(urlStr);
   if (url) {
@@ -233,6 +239,7 @@ function updateNightlight() {
       'state', {
         isOn:         isOn,
         isAggressive: isAggressive,
+        isObserving:  listContainsHostname(OBSERVE_LIST, url),
         darkenImages: safari.extension.settings.darkenImages,
         hotkey:       safari.extension.settings.hotkey
       }
@@ -240,8 +247,16 @@ function updateNightlight() {
   }
 
   renderIsOn(isOn);
-  renderIgnoreTab(isIgnored);
+  renderIsIgnored(isIgnored);
   renderIsAggressive(AGGRESSIVE_TABS.has(tab));
+}
+
+function handleOpen(event) {
+  console.log(event);
+}
+
+function handleClose(event) {
+  console.log(event);
 }
 
 function handleNavigate(event) {
@@ -255,33 +270,38 @@ function handleActivate(event) {
 
 function handleMessage(event) {
   switch (event.name) {
-    case 'webpageColors':
-      renderColorGrid(event.message);
-      break;
-    case 'pageReload':
-      AGGRESSIVE_TABS.delete(safari.application.activeBrowserWindow.activeTab);
-      break;
-    case 'requestToggleNightlight':
-      safari.extension.settings.isOn = !safari.extension.settings.isOn;
-      updateNightlight();
-      break;
+  case 'webpageColors':
+    renderColorGrid(event.message);
+    break;
+  case 'pageReload':
+    AGGRESSIVE_TABS.delete(safari.application.activeBrowserWindow.activeTab);
+    break;
+  case 'requestToggleNightlight':
+    safari.extension.settings.isOn = !safari.extension.settings.isOn;
+    updateNightlight();
+    break;
   }
 }
 
 function handleSettings(event) {
   switch (event.key) {
-    case 'isOn':
-      updateNightlight();
-      break;
-    case 'aggressiveList':
-      AGGRESSIVE_LIST = safari.extension.settings.aggressiveList.split(',');
-      break;
-    case 'blacklist':
-      BLACKLIST = safari.extension.settings.blacklist.split(',');
-      break;
+  case 'isOn':
+    updateNightlight();
+    break;
+  case 'aggressiveList':
+    AGGRESSIVE_LIST = makeList(safari.extension.settings.aggressiveList);
+    break;
+  case 'blacklist':
+    BLACKLIST = makeList(safari.extension.settings.blacklist);
+    break;
+  case 'observeList':
+    OBSERVE_LIST = makeList(safari.extension.settings.observeList);
+    break;
   }
 }
 
+safari.application.addEventListener('open', handleOpen, true);
+safari.application.addEventListener('close', handleClose, true);
 safari.application.addEventListener('navigate', handleNavigate, true);
 safari.application.addEventListener('activate', handleActivate, true);
 safari.application.addEventListener('message', handleMessage, false);

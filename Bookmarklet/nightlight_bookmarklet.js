@@ -89,21 +89,21 @@ function TransparentColor() {
 
 function setNewColor(type, oldColor, newColor) {
   switch (type) {
-    case 'bg':
-      WEBPAGE_COLORS.bgColors.set(oldColor.rgbString(), newColor.rgbString());
-      break;
-    case 'text':
-      WEBPAGE_COLORS.textColors.set(oldColor.rgbString(), newColor.rgbString());
-      break;
+  case 'bg':
+    WEBPAGE_COLORS.bgColors.set(oldColor.rgbString(), newColor.rgbString());
+    break;
+  case 'text':
+    WEBPAGE_COLORS.textColors.set(oldColor.rgbString(), newColor.rgbString());
+    break;
   }
 }
 
 function getNewColor(type, oldColorStr) {
   switch (type) {
-    case 'bg':
-      return WEBPAGE_COLORS.bgColors.get(oldColorStr);
-    case 'text':
-      return WEBPAGE_COLORS.textColors.get(oldColorStr);
+  case 'bg':
+    return WEBPAGE_COLORS.bgColors.get(oldColorStr);
+  case 'text':
+    return WEBPAGE_COLORS.textColors.get(oldColorStr);
   }
 }
 
@@ -159,35 +159,35 @@ function nightlight(element) {
   }
 
   switch (element.tagName) {
-    case 'BODY':
-      if (newBgColor.isTransparent()) {
-        newBgColor = BlackColor();
-      }
-      element.style.backgroundImage = 'none';
-      element.style.setProperty('background-color', newBgColor.rgbString(), 'important');
+  case 'BODY':
+    if (newBgColor.isTransparent()) {
+      newBgColor = BlackColor();
+    }
+    element.style.setProperty('background-image', 'none', 'important');
+    element.style.setProperty('background-color', newBgColor.rgbString(), 'important');
+    element.style.setProperty('color', newTextColor.rgbString(), 'important');
+    break;
+  case 'CANVAS':
+    element.parentNode.removeChild(element);
+    break;
+  case 'IMG':
+    element.style.filter = 'brightness(70%)';
+    break;
+  case 'DIV':
+  case 'SPAN':
+    if (style.backgroundImage != 'none') {
+      return;
+    }
+    element.style.setProperty('background-color', newBgColor.rgbString(), 'important');
+    element.style.setProperty('border-color', newTextColor.rgbString(), 'important');
+    if (!newBgColor.isLight()) {
       element.style.setProperty('color', newTextColor.rgbString(), 'important');
-      break;
-    case 'CANVAS':
-      element.parentNode.removeChild(element);
-      break;
-    case 'IMG':
-      element.style.filter = 'brightness(70%)';
-      break;
-    case 'DIV':
-    case 'SPAN':
-      if (style.backgroundImage != 'none') {
-        return;
-      }
-      element.style.setProperty('background-color', newBgColor.rgbString(), 'important');
-      element.style.borderColor = newTextColor.rgbString();
-      if (!newBgColor.isLight()) {
-        element.style.color = newTextColor.rgbString();
-      }
-      break;
-    default:
-      element.style.backgroundColor = newBgColor.rgbString();
-      element.style.color = newTextColor.rgbString();
-      break;
+    }
+    break;
+  default:
+    element.style.setProperty('background-color', newBgColor.rgbString(), 'important');
+    element.style.setProperty('color', newTextColor.rgbString(), 'important');
+    break;
   }
   
   element = element.firstChild;

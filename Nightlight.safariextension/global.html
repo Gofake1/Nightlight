@@ -20,8 +20,10 @@ function handleSettings(event) {
   case 'offTime':
     window.clearInterval(ONINTERVAL);
     window.clearInterval(OFFINTERVAL);
-    startTimerForMode('on', safari.extension.settings.onTime);
-    startTimerForMode('off', safari.extension.settings.offTime);
+    if (safari.extension.settings.autoOn) {
+      startTimerForMode('on', safari.extension.settings.onTime);
+      startTimerForMode('off', safari.extension.settings.offTime);
+    }
     break;
   }
 }

@@ -1,9 +1,9 @@
-var DARKEN_IMAGES = false;
-var IS_AGGRESSIVE = false;
-
-const IGNORED_ELEMENTS = ['VIDEO','SCRIPT'];
+var DARKEN_IMAGES  = false;
+var IS_AGGRESSIVE  = false;
+var OBSERVER       = null;
 var WEBPAGE_COLORS = null;
 
+const IGNORED_ELEMENTS = ['VIDEO','SCRIPT'];
 const HOTKEY = {
   NONE:            '0',
   OPTION_N:        '1',
@@ -192,10 +192,10 @@ function makeWebpageColors(element) {
 
 function getNewColor(type, oldColor) {
   switch (type) {
-    case 'bg':
-      return WEBPAGE_COLORS.bgColors.get(oldColor);
-    case 'text':
-      return WEBPAGE_COLORS.textColors.get(oldColor);
+  case 'bg':
+    return WEBPAGE_COLORS.bgColors.get(oldColor);
+  case 'text':
+    return WEBPAGE_COLORS.textColors.get(oldColor);
   }
 }
 
@@ -233,51 +233,51 @@ function nightlight(mode, element) {
     }
 
     switch (element.tagName) {
-      case 'BODY':
-        if (newBgColor.isTransparent()) {
-          newBgColor = BlackColor();
-        }
-        element.style.backgroundImage = 'none';
-        element.style.setProperty('background-color', newBgColor.rgbString(), 'important');
+    case 'BODY':
+      if (newBgColor.isTransparent()) {
+        newBgColor = BlackColor();
+      }
+      element.style.setProperty('background-image', 'none', 'important');
+      element.style.setProperty('background-color', newBgColor.rgbString(), 'important');
+      element.style.setProperty('color', newTextColor.rgbString(), 'important');
+      break;
+    case 'CANVAS':
+      if (IS_AGGRESSIVE) {
+        element.parentNode.removeChild(element);
+      }
+      break;
+    case 'IMG':
+      if (DARKEN_IMAGES) {
+        element.style.setProperty('filter', 'brightness(70%)', 'important');
+      }
+      break;
+    case 'INPUT':
+      if (element.type == 'search') {
+        element.style.setProperty('webkit-appearance', 'none', 'important');
+      }
+      element.style.setProperty('background-color', newBgColor.rgbString(), 'important');
+      element.style.setProperty('color', newTextColor.rgbString(), 'important');
+      break;
+    case 'DIV':
+    case 'SPAN':
+      if (IS_AGGRESSIVE) {
+        element.style.setProperty('border-width', '0px', 'important');
+      } else if (style.backgroundImage != 'none') {
+        return;
+      }
+      element.style.setProperty('background-color', newBgColor.rgbString(), 'important');
+      element.style.setProperty('border-color', newTextColor.rgbString(), 'important');
+      if (!newBgColor.isLight()) {
         element.style.setProperty('color', newTextColor.rgbString(), 'important');
-        break;
-      case 'CANVAS':
-        if (IS_AGGRESSIVE) {
-          element.parentNode.removeChild(element);
-        }
-        break;
-      case 'IMG':
-        if (DARKEN_IMAGES) {
-          element.style.filter = 'brightness(70%)';
-        }
-        break;
-      case 'INPUT':
-        if (element.type == 'search') {
-          element.style.webkitAppearance = 'none';
-        }
-        element.style.backgroundColor = newBgColor.rgbString();
-        element.style.color = newTextColor.rgbString();
-        break;
-      case 'DIV':
-      case 'SPAN':
-        if (IS_AGGRESSIVE) {
-          element.style.borderWidth = '0px';
-        } else if (style.backgroundImage != 'none') {
-          return;
-        }
-        element.style.setProperty('background-color', newBgColor.rgbString(), 'important');
-        element.style.setProperty('border-color', newTextColor.rgbString(), 'important');
-        if (!newBgColor.isLight()) {
-          element.style.setProperty('color', newTextColor.rgbString(), 'important');
-        }
-        break;
-      default:
-        if (IS_AGGRESSIVE) {
-          element.style.backgroundImage = 'none';
-        }
-        element.style.setProperty('background-color', newBgColor.rgbString(), 'important');
-        element.style.setProperty('color', newTextColor.rgbString(), 'important');
-        break;
+      }
+      break;
+    default:
+      if (IS_AGGRESSIVE) {
+        element.style.setProperty('background-image', 'none', 'important');
+      }
+      element.style.setProperty('background-color', newBgColor.rgbString(), 'important');
+      element.style.setProperty('color', newTextColor.rgbString(), 'important');
+      break;
     }
 
   } else if (mode == NIGHTLIGHT_OFF) {
@@ -301,39 +301,50 @@ function nightlight(mode, element) {
 
 function update(isOn) {
   switch (CURRENT_STATE) {
-    case STATE.ACTIVE_NOT_DARKENED:
-      if (WEBPAGE_COLORS === null) {
-        WEBPAGE_COLORS = {
-          bgColors:   new Map(),
-          textColors: new Map()
-        };
-        makeWebpageColors(document.body);
-      }
-      nightlight(NIGHTLIGHT_ON, document.body);
-      CURRENT_STATE = STATE.ACTIVE_DARKENED;
-      break;
-    case STATE.ACTIVE_DARKENED:
-      if (!isOn) {
-        CURRENT_STATE = STATE.INACTIVE_DARKENED;
-        update(isOn);
-      }
-      break;
-    case STATE.INACTIVE_DARKENED:
-      nightlight(NIGHTLIGHT_OFF, document.body);
-      CURRENT_STATE = STATE.INACTIVE_NOT_DARKENED;
-      break;
-    case STATE.INACTIVE_NOT_DARKENED:
-      if (isOn) {
-        CURRENT_STATE = STATE.ACTIVE_NOT_DARKENED;
-        update(isOn);
-      }
-      break;
-    case STATE.NEEDS_AGGRESSIVE:
-      nightlight(NIGHTLIGHT_ON, document.body);
-      CURRENT_STATE = STATE.ACTIVE_DARKENED;
-      break;
+  case STATE.ACTIVE_NOT_DARKENED:
+    if (WEBPAGE_COLORS === null) {
+      WEBPAGE_COLORS = {
+        bgColors:   new Map(),
+        textColors: new Map()
+      };
+      makeWebpageColors(document.body);
+    }
+    nightlight(NIGHTLIGHT_ON, document.body);
+    CURRENT_STATE = STATE.ACTIVE_DARKENED;
+    break;
+  case STATE.ACTIVE_DARKENED:
+    if (!isOn) {
+      CURRENT_STATE = STATE.INACTIVE_DARKENED;
+      update(isOn);
+    }
+    break;
+  case STATE.INACTIVE_DARKENED:
+    nightlight(NIGHTLIGHT_OFF, document.body);
+    CURRENT_STATE = STATE.INACTIVE_NOT_DARKENED;
+    break;
+  case STATE.INACTIVE_NOT_DARKENED:
+    if (isOn) {
+      CURRENT_STATE = STATE.ACTIVE_NOT_DARKENED;
+      update(isOn);
+    }
+    break;
+  case STATE.NEEDS_AGGRESSIVE:
+    nightlight(NIGHTLIGHT_ON, document.body);
+    CURRENT_STATE = STATE.ACTIVE_DARKENED;
+    break;
   }
   safari.self.tab.dispatchMessage('webpageColors', WEBPAGE_COLORS);
+}
+
+function updateObserver(isObserving) {
+  if (OBSERVER === null) {
+    OBSERVER = new MutationObserver(handleMutations);
+  }
+  if (isObserving) {
+    OBSERVER.observe(document.body, { childList: true, subtree: true });
+  } else {
+    OBSERVER.disconnect();
+  }
 }
 
 function updateHotkey(hotkey) {
@@ -367,25 +378,28 @@ function updateHotkey(hotkey) {
 
 function handleMessage(event) {
   switch (event.name) {
-    case 'state':
-      if (event.message.darkenImages !== undefined) {
-        DARKEN_IMAGES = event.message.darkenImages;
-      }
-      if (event.message.isAggressive !== undefined) {
-        IS_AGGRESSIVE = event.message.isAggressive;
-      }
-      if (event.message.hotkey !== undefined) {
-        updateHotkey(event.message.hotkey);
-      }
-      if (event.message.isOn !== undefined) {
-        update(event.message.isOn);
-      }
-      break;
-    case 'beAggressive':
-      IS_AGGRESSIVE = true;
-      CURRENT_STATE = STATE.NEEDS_AGGRESSIVE;
-      update(true);
-      break;
+  case 'state':
+    if (event.message.darkenImages !== undefined) {
+      DARKEN_IMAGES = event.message.darkenImages;
+    }
+    if (event.message.isAggressive !== undefined) {
+      IS_AGGRESSIVE = event.message.isAggressive;
+    }
+    if (event.message.isObserving !== undefined) {
+      updateObserver(event.message.isObserving);
+    }
+    if (event.message.hotkey !== undefined) {
+      updateHotkey(event.message.hotkey);
+    }
+    if (event.message.isOn !== undefined) {
+      update(event.message.isOn);
+    }
+    break;
+  case 'beAggressive':
+    IS_AGGRESSIVE = true;
+    CURRENT_STATE = STATE.NEEDS_AGGRESSIVE;
+    update(true);
+    break;
   }
 }
 
@@ -421,7 +435,5 @@ function handleKeydown(event) {
 if (typeof(safari) == 'object') {
   safari.self.addEventListener('message', handleMessage, false);
 }
-var observer = new MutationObserver(handleMutations);
-observer.observe(document.body, { childList: true, subtree: true });
 window.onbeforeunload = handleReload;
 window.addEventListener('keydown', handleKeydown, false);
