@@ -1,2 +1,2 @@
-.jshintrc
-.csslintrc
+*.DS_Store
+xcuserdata/

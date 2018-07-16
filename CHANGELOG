@@ -1,4 +1,0 @@
-v0.1.3: Implement hotkey
-v0.1.2: Override webpage style rules marked `!important`
-v0.1.1: Stateful logic refactor, Chrome support
-v0.1.0: Initial release, Safari support
