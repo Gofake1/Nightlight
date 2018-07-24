@@ -61,6 +61,8 @@
 		63A8279E20FC92F100671659 /* script.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = script.js; sourceTree = "<group>"; };
 		63A827A020FC92F100671659 /* ToolbarItemIcon.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = ToolbarItemIcon.pdf; sourceTree = "<group>"; };
 		63A827A220FC92F100671659 /* SafariExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SafariExtension.entitlements; sourceTree = "<group>"; };
+		63DB0F462101ADC8001E4051 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = SOURCE_ROOT; };
+		63DB0F472101ADC8001E4051 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -85,6 +87,8 @@
 		63A8277120FC922500671659 = {
 			isa = PBXGroup;
 			children = (
+				63DB0F462101ADC8001E4051 /* README.md */,
+				63DB0F472101ADC8001E4051 /* LICENSE */,
 				63A8277C20FC922500671659 /* Nightlight */,
 				63A8279520FC92F100671659 /* SafariExtension */,
 				63A8279220FC92F100671659 /* Frameworks */,
@@ -106,8 +110,8 @@
 			children = (
 				63A8277D20FC922500671659 /* AppDelegate.swift */,
 				63A8277F20FC922500671659 /* ViewController.swift */,
-				63A8278120FC922900671659 /* Assets.xcassets */,
 				63A8278320FC922900671659 /* Main.storyboard */,
+				63A8278120FC922900671659 /* Assets.xcassets */,
 				63A8278620FC922900671659 /* Info.plist */,
 				63A8278720FC922900671659 /* Nightlight.entitlements */,
 			);
@@ -128,9 +132,9 @@
 				63A8279620FC92F100671659 /* SafariExtensionHandler.swift */,
 				63A8279820FC92F100671659 /* SafariExtensionViewController.swift */,
 				63A8279A20FC92F100671659 /* SafariExtensionViewController.xib */,
-				63A8279D20FC92F100671659 /* Info.plist */,
 				63A8279E20FC92F100671659 /* script.js */,
 				63A827A020FC92F100671659 /* ToolbarItemIcon.pdf */,
+				63A8279D20FC92F100671659 /* Info.plist */,
 				63A827A220FC92F100671659 /* SafariExtension.entitlements */,
 			);
 			path = SafariExtension;
@@ -187,9 +191,19 @@
 				TargetAttributes = {
 					63A8277920FC922500671659 = {
 						CreatedOnToolsVersion = 10.0;
+						SystemCapabilities = {
+							com.apple.HardenedRuntime = {
+								enabled = 1;
+							};
+						};
 					};
 					63A8279020FC92F100671659 = {
 						CreatedOnToolsVersion = 10.0;
+						SystemCapabilities = {
+							com.apple.HardenedRuntime = {
+								enabled = 0;
+							};
+						};
 					};
 				};
 			};
@@ -239,8 +253,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				63A8278020FC922500671659 /* ViewController.swift in Sources */,
 				63A8277E20FC922500671659 /* AppDelegate.swift in Sources */,
+				63A8278020FC922500671659 /* ViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -248,8 +262,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				63A8279920FC92F100671659 /* SafariExtensionViewController.swift in Sources */,
 				63A8279720FC92F100671659 /* SafariExtensionHandler.swift in Sources */,
+				63A8279920FC92F100671659 /* SafariExtensionViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -334,7 +348,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -389,7 +403,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
@@ -407,6 +421,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = W6KLMFETUQ;
+				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = Nightlight/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -427,6 +442,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = W6KLMFETUQ;
+				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = Nightlight/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
