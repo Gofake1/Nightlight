@@ -1,0 +1,3 @@
+[submodule "Submodules/Solar"]
+	path = Submodules/Solar
+	url = https://github.com/ceeK/Solar

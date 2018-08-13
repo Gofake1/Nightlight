@@ -4,7 +4,7 @@ const BASIC = 'html{background-color:#000;color:#fff;}a{color:lightblue;}img{fil
 // Workaround: Bug in Safari that breaks current approach in certain cases
 // (rdar://42491788). This is a clumsy fallback that's bad for pages that 
 // Safari isn't broken for, but better than nothing for pages that are.
-const HACKS = 'body{background-color:#000;color:#fff}div{background-color:#000;color:#fff;}';
+const HACKS = 'body{background-color:#000;color:#fff}div{background-color:rgba(0,0,0,0.5);color:#fff;}';
 const COLOR_DARKEN_PROPS = [
 'backgroundColor',
 'floodColor',
@@ -106,7 +106,6 @@ window.top.onload = () => {
 safari.self.addEventListener('message', event => {
   switch(event.name) {
   case 'START':
-    console.assert(STATE != STATES.ENABLED);
     if(STATE == STATES.NEW) {
       console.assert(STYLES == []);
       const processedStyles = event.message;

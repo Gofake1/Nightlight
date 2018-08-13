@@ -7,4 +7,8 @@ Nightlight is a browser extension that darkens websites while attempting to pres
 
 ### Under Construction
 
+### Acknowledgements
+
+* [Solar](https://github.com/ceeK/Solar) (MIT)
+
 *This project is available under the MIT License.*

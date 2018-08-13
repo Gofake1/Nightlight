@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		630563BC2114E47B0028BF36 /* Common.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63AAA2A62110397A001C2801 /* Common.swift */; };
+		63093F00211E702300BBAA22 /* AutoOnTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63093EFF211E702300BBAA22 /* AutoOnTimer.swift */; };
+		632935D62112DC3A00F3AA97 /* Solar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 632935BC2112DC3A00F3AA97 /* Solar.swift */; };
+		632935E32112DC6300F3AA97 /* Solar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 632935BC2112DC3A00F3AA97 /* Solar.swift */; };
 		63A8277E20FC922500671659 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63A8277D20FC922500671659 /* AppDelegate.swift */; };
 		63A8278020FC922500671659 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63A8277F20FC922500671659 /* ViewController.swift */; };
 		63A8278220FC922900671659 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 63A8278120FC922900671659 /* Assets.xcassets */; };
@@ -18,9 +22,33 @@
 		63A8279F20FC92F100671659 /* script.js in Resources */ = {isa = PBXBuildFile; fileRef = 63A8279E20FC92F100671659 /* script.js */; };
 		63A827A120FC92F100671659 /* ToolbarItemIcon.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 63A827A020FC92F100671659 /* ToolbarItemIcon.pdf */; };
 		63A827A520FC92F100671659 /* SafariExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 63A8279120FC92F100671659 /* SafariExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		63AAA2A5210FF89C001C2801 /* AppDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63AAA2A4210FF89C001C2801 /* AppDefaults.swift */; };
+		63AAA2A72110397A001C2801 /* Common.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63AAA2A62110397A001C2801 /* Common.swift */; };
+		63E03E8A2116BD5D00DC7474 /* AppDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63E03E892116BD5D00DC7474 /* AppDefaults.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		632935D02112DC3A00F3AA97 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 632935C12112DC3A00F3AA97 /* Solar.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = F7FC5B5A1D469B2700C4D3EB;
+			remoteInfo = Solar_iOS;
+		};
+		632935D22112DC3A00F3AA97 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 632935C12112DC3A00F3AA97 /* Solar.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 1410E9C01EF12B5A001829A5;
+			remoteInfo = Solar_watchOS;
+		};
+		632935D42112DC3A00F3AA97 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 632935C12112DC3A00F3AA97 /* Solar.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 97837EAB1E4BB1DE000FEF64;
+			remoteInfo = Solar_iOSTests;
+		};
 		63A827A320FC92F100671659 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 63A8277220FC922500671659 /* Project object */;
@@ -45,6 +73,21 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		63093EFF211E702300BBAA22 /* AutoOnTimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoOnTimer.swift; sourceTree = "<group>"; };
+		632935BC2112DC3A00F3AA97 /* Solar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Solar.swift; sourceTree = "<group>"; };
+		632935BD2112DC3A00F3AA97 /* Info-iOS.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Info-iOS.plist"; sourceTree = "<group>"; };
+		632935BE2112DC3A00F3AA97 /* Info-watchOS.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Info-watchOS.plist"; sourceTree = "<group>"; };
+		632935BF2112DC3A00F3AA97 /* solar-logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "solar-logo.png"; sourceTree = "<group>"; };
+		632935C02112DC3A00F3AA97 /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
+		632935C12112DC3A00F3AA97 /* Solar.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = Solar.xcodeproj; sourceTree = "<group>"; };
+		632935C52112DC3A00F3AA97 /* Solar_iOSTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Solar_iOSTests.swift; sourceTree = "<group>"; };
+		632935C62112DC3A00F3AA97 /* City.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = City.swift; sourceTree = "<group>"; };
+		632935C72112DC3A00F3AA97 /* CorrectResults.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = CorrectResults.json; sourceTree = "<group>"; };
+		632935C82112DC3A00F3AA97 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		632935C92112DC3A00F3AA97 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		632935CA2112DC3A00F3AA97 /* .gitignore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
+		632935CB2112DC3A00F3AA97 /* Solar.podspec */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Solar.podspec; sourceTree = "<group>"; };
+		632935CC2112DC3A00F3AA97 /* .travis.yml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .travis.yml; sourceTree = "<group>"; };
 		63A8277A20FC922500671659 /* Nightlight.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Nightlight.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		63A8277D20FC922500671659 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		63A8277F20FC922500671659 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -61,8 +104,11 @@
 		63A8279E20FC92F100671659 /* script.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = script.js; sourceTree = "<group>"; };
 		63A827A020FC92F100671659 /* ToolbarItemIcon.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = ToolbarItemIcon.pdf; sourceTree = "<group>"; };
 		63A827A220FC92F100671659 /* SafariExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SafariExtension.entitlements; sourceTree = "<group>"; };
+		63AAA2A4210FF89C001C2801 /* AppDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDefaults.swift; sourceTree = "<group>"; };
+		63AAA2A62110397A001C2801 /* Common.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Common.swift; sourceTree = "<group>"; };
 		63DB0F462101ADC8001E4051 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = SOURCE_ROOT; };
 		63DB0F472101ADC8001E4051 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = SOURCE_ROOT; };
+		63E03E892116BD5D00DC7474 /* AppDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDefaults.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -84,13 +130,62 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		632935BA2112DC3A00F3AA97 /* Solar */ = {
+			isa = PBXGroup;
+			children = (
+				632935C12112DC3A00F3AA97 /* Solar.xcodeproj */,
+				632935BB2112DC3A00F3AA97 /* Solar */,
+				632935C42112DC3A00F3AA97 /* Solar iOSTests */,
+				632935CA2112DC3A00F3AA97 /* .gitignore */,
+				632935CC2112DC3A00F3AA97 /* .travis.yml */,
+				632935BF2112DC3A00F3AA97 /* solar-logo.png */,
+				632935C02112DC3A00F3AA97 /* LICENSE */,
+				632935C92112DC3A00F3AA97 /* README.md */,
+				632935CB2112DC3A00F3AA97 /* Solar.podspec */,
+			);
+			path = Solar;
+			sourceTree = "<group>";
+		};
+		632935BB2112DC3A00F3AA97 /* Solar */ = {
+			isa = PBXGroup;
+			children = (
+				632935BC2112DC3A00F3AA97 /* Solar.swift */,
+				632935BD2112DC3A00F3AA97 /* Info-iOS.plist */,
+				632935BE2112DC3A00F3AA97 /* Info-watchOS.plist */,
+			);
+			path = Solar;
+			sourceTree = "<group>";
+		};
+		632935C22112DC3A00F3AA97 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				632935D12112DC3A00F3AA97 /* Solar.framework */,
+				632935D32112DC3A00F3AA97 /* Solar.framework */,
+				632935D52112DC3A00F3AA97 /* Solar_iOSTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		632935C42112DC3A00F3AA97 /* Solar iOSTests */ = {
+			isa = PBXGroup;
+			children = (
+				632935C52112DC3A00F3AA97 /* Solar_iOSTests.swift */,
+				632935C62112DC3A00F3AA97 /* City.swift */,
+				632935C72112DC3A00F3AA97 /* CorrectResults.json */,
+				632935C82112DC3A00F3AA97 /* Info.plist */,
+			);
+			path = "Solar iOSTests";
+			sourceTree = "<group>";
+		};
 		63A8277120FC922500671659 = {
 			isa = PBXGroup;
 			children = (
 				63DB0F462101ADC8001E4051 /* README.md */,
 				63DB0F472101ADC8001E4051 /* LICENSE */,
+				63AAA2A62110397A001C2801 /* Common.swift */,
 				63A8277C20FC922500671659 /* Nightlight */,
 				63A8279520FC92F100671659 /* SafariExtension */,
+				63DB0F292101AD60001E4051 /* Submodules */,
 				63A8279220FC92F100671659 /* Frameworks */,
 				63A8277B20FC922500671659 /* Products */,
 			);
@@ -108,6 +203,7 @@
 		63A8277C20FC922500671659 /* Nightlight */ = {
 			isa = PBXGroup;
 			children = (
+				63AAA2A4210FF89C001C2801 /* AppDefaults.swift */,
 				63A8277D20FC922500671659 /* AppDelegate.swift */,
 				63A8277F20FC922500671659 /* ViewController.swift */,
 				63A8278320FC922900671659 /* Main.storyboard */,
@@ -129,6 +225,8 @@
 		63A8279520FC92F100671659 /* SafariExtension */ = {
 			isa = PBXGroup;
 			children = (
+				63E03E892116BD5D00DC7474 /* AppDefaults.swift */,
+				63093EFF211E702300BBAA22 /* AutoOnTimer.swift */,
 				63A8279620FC92F100671659 /* SafariExtensionHandler.swift */,
 				63A8279820FC92F100671659 /* SafariExtensionViewController.swift */,
 				63A8279A20FC92F100671659 /* SafariExtensionViewController.xib */,
@@ -139,6 +237,14 @@
 			);
 			path = SafariExtension;
 			sourceTree = "<group>";
+		};
+		63DB0F292101AD60001E4051 /* Submodules */ = {
+			isa = PBXGroup;
+			children = (
+				632935BA2112DC3A00F3AA97 /* Solar */,
+			);
+			path = Submodules;
+			sourceTree = SOURCE_ROOT;
 		};
 /* End PBXGroup section */
 
@@ -192,6 +298,9 @@
 					63A8277920FC922500671659 = {
 						CreatedOnToolsVersion = 10.0;
 						SystemCapabilities = {
+							com.apple.ApplicationGroups.Mac = {
+								enabled = 1;
+							};
 							com.apple.HardenedRuntime = {
 								enabled = 1;
 							};
@@ -200,6 +309,9 @@
 					63A8279020FC92F100671659 = {
 						CreatedOnToolsVersion = 10.0;
 						SystemCapabilities = {
+							com.apple.ApplicationGroups.Mac = {
+								enabled = 1;
+							};
 							com.apple.HardenedRuntime = {
 								enabled = 0;
 							};
@@ -218,6 +330,12 @@
 			mainGroup = 63A8277120FC922500671659;
 			productRefGroup = 63A8277B20FC922500671659 /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 632935C22112DC3A00F3AA97 /* Products */;
+					ProjectRef = 632935C12112DC3A00F3AA97 /* Solar.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				63A8277920FC922500671659 /* Nightlight */,
@@ -225,6 +343,30 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		632935D12112DC3A00F3AA97 /* Solar.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = Solar.framework;
+			remoteRef = 632935D02112DC3A00F3AA97 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		632935D32112DC3A00F3AA97 /* Solar.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = Solar.framework;
+			remoteRef = 632935D22112DC3A00F3AA97 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		632935D52112DC3A00F3AA97 /* Solar_iOSTests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = Solar_iOSTests.xctest;
+			remoteRef = 632935D42112DC3A00F3AA97 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		63A8277820FC922500671659 /* Resources */ = {
@@ -253,8 +395,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				63AAA2A72110397A001C2801 /* Common.swift in Sources */,
+				63AAA2A5210FF89C001C2801 /* AppDefaults.swift in Sources */,
 				63A8277E20FC922500671659 /* AppDelegate.swift in Sources */,
 				63A8278020FC922500671659 /* ViewController.swift in Sources */,
+				632935D62112DC3A00F3AA97 /* Solar.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -262,8 +407,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				630563BC2114E47B0028BF36 /* Common.swift in Sources */,
+				63E03E8A2116BD5D00DC7474 /* AppDefaults.swift in Sources */,
+				63093F00211E702300BBAA22 /* AutoOnTimer.swift in Sources */,
 				63A8279720FC92F100671659 /* SafariExtensionHandler.swift in Sources */,
 				63A8279920FC92F100671659 /* SafariExtensionViewController.swift in Sources */,
+				632935E32112DC6300F3AA97 /* Solar.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
