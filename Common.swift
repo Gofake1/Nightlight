@@ -26,19 +26,18 @@ enum AppDefaultKind: String {
 extension CLLocationCoordinate2D {
     func makeSolarDates() -> (sunset: Date, sunrise: Date)? {
         let solar = Solar(coordinate: self)
-        if let solar = solar, let sunset = solar.sunset, let sunrise = solar.sunrise {
+        if let solar = solar, var sunset = solar.sunset, var sunrise = solar.sunrise {
+            let now = Date()
+            if sunset < now {
+                sunset = Calendar.autoupdatingCurrent.date(byAdding: .day, value: 1, to: sunset)!
+            }
+            if sunrise < now {
+                sunrise = Calendar.autoupdatingCurrent.date(byAdding: .day, value: 1, to: sunrise)!
+            }
             return (sunset, sunrise)
         } else {
             return nil
         }
-    }
-}
-
-extension Int {
-    var date: Date {
-        assert(self >= 0 && self < 86400)
-        let dc = DateComponents(second: self)
-        return Calendar.current.date(from: dc)!
     }
 }
 

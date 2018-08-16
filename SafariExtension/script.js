@@ -1,6 +1,6 @@
-// FIXME: Currently unable to handle inline style attributes
+// Inline HTML attributes don't figure into the darkening process and are simply ignored
 
-const BASIC = 'html{background-color:#000;color:#fff;}a{color:lightblue;}img{filter:brightness(75%);}input{background-color:#000;color:#fff;}input[type="search"]{-webkit-appearance:none;}textarea{background-color:#000;color:#fff;}';
+const BASIC = 'html{background-color:#000;color:#fff;}a{color:lightblue;}img{filter:brightness(75%);}input{background-color:#000 !important;color:#fff !important;}input[type="search"]{-webkit-appearance:none;}table{background-color:#000 !important;color:#fff !important;}textarea{background-color:#000 !important;color:#fff !important;}';
 // Workaround: Bug in Safari that breaks current approach in certain cases
 // (rdar://42491788). This is a clumsy fallback that's bad for pages that 
 // Safari isn't broken for, but better than nothing for pages that are.
@@ -124,7 +124,7 @@ safari.self.addEventListener('message', event => {
       return { href: s.href, newStyle: makeProcessedStyle(s) };
     }
 
-    console.assert(STATE == STATES.NEW);
+//    console.assert(STATE == STATES.NEW);
     const processedHrefsAndStyles = getHrefStyleSheets().map(a);
     const processedInlineStyles = getInlineStyleSheets()
       .map(makeProcessedStyle);

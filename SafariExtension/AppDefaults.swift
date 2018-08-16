@@ -35,6 +35,12 @@ final class AppDefaults {
             groupDefaults.addObserver(object, forKeyPath: `default`.rawValue, options: .new, context: nil)
         }
     }
+    
+    static func removeObserver(_ object: NSObject, forDefaults defaults: Set<AppDefaultKind>) {
+        for `default` in defaults {
+            groupDefaults.removeObserver(object, forKeyPath: `default`.rawValue)
+        }
+    }
 }
 
 extension UserDefaults {

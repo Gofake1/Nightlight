@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		630563BC2114E47B0028BF36 /* Common.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63AAA2A62110397A001C2801 /* Common.swift */; };
 		63093F00211E702300BBAA22 /* AutoOnTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63093EFF211E702300BBAA22 /* AutoOnTimer.swift */; };
+		631C62202124A30100DF9B4C /* Calendar+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 631C621F2124A30100DF9B4C /* Calendar+.swift */; };
+		631C622521263A8400DF9B4C /* MessageHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 631C622421263A8400DF9B4C /* MessageHandler.swift */; };
 		632935D62112DC3A00F3AA97 /* Solar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 632935BC2112DC3A00F3AA97 /* Solar.swift */; };
 		632935E32112DC6300F3AA97 /* Solar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 632935BC2112DC3A00F3AA97 /* Solar.swift */; };
 		63A8277E20FC922500671659 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63A8277D20FC922500671659 /* AppDelegate.swift */; };
@@ -74,6 +76,8 @@
 
 /* Begin PBXFileReference section */
 		63093EFF211E702300BBAA22 /* AutoOnTimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoOnTimer.swift; sourceTree = "<group>"; };
+		631C621F2124A30100DF9B4C /* Calendar+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Calendar+.swift"; sourceTree = "<group>"; };
+		631C622421263A8400DF9B4C /* MessageHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageHandler.swift; sourceTree = "<group>"; };
 		632935BC2112DC3A00F3AA97 /* Solar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Solar.swift; sourceTree = "<group>"; };
 		632935BD2112DC3A00F3AA97 /* Info-iOS.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Info-iOS.plist"; sourceTree = "<group>"; };
 		632935BE2112DC3A00F3AA97 /* Info-watchOS.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Info-watchOS.plist"; sourceTree = "<group>"; };
@@ -227,6 +231,8 @@
 			children = (
 				63E03E892116BD5D00DC7474 /* AppDefaults.swift */,
 				63093EFF211E702300BBAA22 /* AutoOnTimer.swift */,
+				631C621F2124A30100DF9B4C /* Calendar+.swift */,
+				631C622421263A8400DF9B4C /* MessageHandler.swift */,
 				63A8279620FC92F100671659 /* SafariExtensionHandler.swift */,
 				63A8279820FC92F100671659 /* SafariExtensionViewController.swift */,
 				63A8279A20FC92F100671659 /* SafariExtensionViewController.xib */,
@@ -410,6 +416,8 @@
 				630563BC2114E47B0028BF36 /* Common.swift in Sources */,
 				63E03E8A2116BD5D00DC7474 /* AppDefaults.swift in Sources */,
 				63093F00211E702300BBAA22 /* AutoOnTimer.swift in Sources */,
+				631C62202124A30100DF9B4C /* Calendar+.swift in Sources */,
+				631C622521263A8400DF9B4C /* MessageHandler.swift in Sources */,
 				63A8279720FC92F100671659 /* SafariExtensionHandler.swift in Sources */,
 				63A8279920FC92F100671659 /* SafariExtensionViewController.swift in Sources */,
 				632935E32112DC6300F3AA97 /* Solar.swift in Sources */,

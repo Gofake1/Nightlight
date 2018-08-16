@@ -103,7 +103,7 @@ class ViewController: NSViewController {
                 let sunriseDateStr = dateFormatter.string(from: sunrise)
                 return "From \(sunsetDateStr) to \(sunriseDateStr)"
             } else {
-                return "Error: Invalid coordinates"
+                return "Error: Invalid coordinate"
             }
         } else {
             return "From --:-- to --:--"
@@ -113,7 +113,14 @@ class ViewController: NSViewController {
 
 extension Date {
     fileprivate var secondsPastMidnight: Int {
-        let dc = Calendar.current.dateComponents([.hour, .minute, .second], from: self)
-        return (dc.hour! * 3600) + (dc.minute! * 60) + dc.second!
+        let dc = Calendar.autoupdatingCurrent.dateComponents([.hour, .minute], from: self)
+        return (dc.hour! * 3600) + (dc.minute! * 60)
+    }
+}
+
+extension Int {
+    fileprivate var date: Date {
+        assert(self >= 0 && self < 86400)
+        return Calendar.autoupdatingCurrent.date(from: DateComponents(second: self))!
     }
 }
