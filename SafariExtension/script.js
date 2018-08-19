@@ -1,10 +1,10 @@
 // Inline HTML attributes don't figure into the darkening process and are simply ignored
 
-const BASIC = 'html{background-color:#000;color:#fff;}a{color:lightblue;}img{filter:brightness(75%);}input{background-color:#000 !important;color:#fff !important;}input[type="search"]{-webkit-appearance:none;}table{background-color:#000 !important;color:#fff !important;}textarea{background-color:#000 !important;color:#fff !important;}';
+const BASIC = 'html{background-color:#000;color:#fff;}a{color:lightblue !important;}img{filter:brightness(75%);}img[src*="svg"]{filter:invert(100%);}input,textarea{background-color:#000 !important;color:#fff !important;}input[type="search"]{-webkit-appearance:none;}';
 // Workaround: Bug in Safari that breaks current approach in certain cases
 // (rdar://42491788). This is a clumsy fallback that's bad for pages that 
 // Safari isn't broken for, but better than nothing for pages that are.
-const HACKS = 'body{background-color:#000;color:#fff}div{background-color:rgba(0,0,0,0.5);color:#fff;}';
+const HACKS = 'body,h1,h2,h3,h4{background-color:#000 !important;color:#fff !important;}div,header,main,nav,section,table,td,tr{background-color:rgba(0,0,0,0.5) !important;color:#fff !important;}p{color:#fff !important;}ul{background-color:#000 !important;}';
 const COLOR_DARKEN_PROPS = [
 'backgroundColor',
 'floodColor',

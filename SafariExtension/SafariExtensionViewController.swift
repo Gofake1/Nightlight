@@ -68,6 +68,8 @@ class SafariExtensionViewController: SFSafariExtensionViewController {
     
     func updateSunsetAutoOnLabel(sunset: Date, sunrise: Date) {
         assert(AppDefaults.autoOnMode == .sunset)
+        // View may not be loaded
+        guard autoOnLabel != nil else { return }
         autoOnLabel.stringValue = makeSunsetAutoOnLabelText(sunset: sunset, sunrise: sunrise)
     }
     

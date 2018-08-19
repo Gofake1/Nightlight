@@ -7,6 +7,8 @@ Nightlight is a browser extension that darkens websites while attempting to pres
 
 ### Under Construction
 
+* Temporary workaround for a Safari bug
+
 ### Acknowledgements
 
 * [Solar](https://github.com/ceeK/Solar) (MIT)
