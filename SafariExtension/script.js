@@ -4,7 +4,7 @@ const BASIC = 'html{background-color:#000;color:#fff;}a{color:lightblue !importa
 // Workaround: Bug in Safari that breaks current approach in certain cases
 // (rdar://42491788). This is a clumsy fallback that's bad for pages that 
 // Safari isn't broken for, but better than nothing for pages that are.
-const HACKS = 'body,h1,h2,h3,h4{background-color:#000 !important;color:#fff !important;}div,header,main,nav,section,table,td,tr{background-color:rgba(0,0,0,0.5) !important;color:#fff !important;}p{color:#fff !important;}ul{background-color:#000 !important;}';
+const HACKS = 'body,h1,h2,h3,h4{background-color:#000 !important;color:#fff !important;}blockquote,div,header,main,nav,section,span,table,td,tr{background-color:rgba(0,0,0,0.5) !important;color:#fff !important;}p{color:#fff !important;}ul{background-color:#000 !important;}';
 const COLOR_DARKEN_PROPS = [
 'backgroundColor',
 'floodColor',

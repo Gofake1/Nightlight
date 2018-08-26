@@ -28,11 +28,15 @@ extension CLLocationCoordinate2D {
         let solar = Solar(coordinate: self)
         if let solar = solar, var sunset = solar.sunset, var sunrise = solar.sunrise {
             let now = Date()
+            let cal = Calendar.autoupdatingCurrent
+            // Truncate seconds
+            sunset = cal.date(from: cal.dateComponents([.year, .month, .day, .hour, .minute], from: sunset))!
+            sunrise = cal.date(from: cal.dateComponents([.year, .month, .day, .hour, .minute], from: sunrise))!
             if sunset < now {
-                sunset = Calendar.autoupdatingCurrent.date(byAdding: .day, value: 1, to: sunset)!
+                sunset = cal.date(byAdding: .day, value: 1, to: sunset)!
             }
             if sunrise < now {
-                sunrise = Calendar.autoupdatingCurrent.date(byAdding: .day, value: 1, to: sunrise)!
+                sunrise = cal.date(byAdding: .day, value: 1, to: sunrise)!
             }
             return (sunset, sunrise)
         } else {

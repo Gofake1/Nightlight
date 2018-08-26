@@ -51,12 +51,10 @@ final class CustomTimer: NSObject {
     {
         switch AppDefaultKind(rawValue: keyPath!)! {
         case .autoOnFromTime:
-            NSLog("from time changed: \(change![.newKey]!)") //*
             onTimer.invalidate()
             onTimer = makeTimer(seconds: change![.newKey]! as! Int) { AppDefaults.isOn = true }
             RunLoop.main.add(onTimer, forMode: .common)
         case .autoOnToTime:
-            NSLog("to time changed: \(change![.newKey]!)") //*
             offTimer.invalidate()
             offTimer = makeTimer(seconds: change![.newKey]! as! Int) { AppDefaults.isOn = false }
             RunLoop.main.add(offTimer, forMode: .common)
@@ -67,7 +65,6 @@ final class CustomTimer: NSObject {
     
     private func makeTimer(seconds: Int, block: @escaping () -> ()) -> Timer {
         let date = Calendar.autoupdatingCurrent.date(timeInSeconds: seconds)!
-        NSLog("timer for \(date)") //*
         return Timer(fire: date, interval: 86400, repeats: true) { _ in block() }
     }
     
@@ -121,17 +118,14 @@ final class SunsetTimer: NSObject {
     }
     
     private func makeTimers(sunset: Date, sunrise: Date, coordinate: CLLocationCoordinate2D) -> (Timer, Timer) {
-        NSLog("making timers for sunset (\(sunset)) and sunrise (\(sunrise))") //*
         return (Timer(fire: sunset, interval: 86400, repeats: true, block: { [weak self] in
             AppDefaults.isOn = true
             $0.fireDate = coordinate.makeSolarDates()!.sunset
-            NSLog("sunset \($0.fireDate)") //*
             SafariExtensionViewController.shared.updateSunsetAutoOnLabel(sunset: $0.fireDate,
                                                                          sunrise: self!.offTimer.fireDate)
         }), Timer(fire: sunrise, interval: 86400, repeats: true, block: { [weak self] in
             AppDefaults.isOn = false
             $0.fireDate = coordinate.makeSolarDates()!.sunrise
-            NSLog("sunrise \($0.fireDate)") //*
             SafariExtensionViewController.shared.updateSunsetAutoOnLabel(sunset: self!.onTimer.fireDate,
                                                                          sunrise: $0.fireDate)
         }))
