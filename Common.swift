@@ -8,6 +8,12 @@
 
 import CoreLocation
 
+let _defaults: [String: Any] = [
+    AppDefaultKind.autoOnMode.rawValue:       AutoOnMode.manual.rawValue,
+    AppDefaultKind.autoOnFromTime.rawValue:   72000,
+    AppDefaultKind.autoOnToTime.rawValue:     28800
+]
+
 enum AutoOnMode: String {
     case manual
     case custom

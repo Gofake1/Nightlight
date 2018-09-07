@@ -32,12 +32,7 @@ final class AppDefaults {
     private static let groupDefaults = UserDefaults(suiteName: "W6KLMFETUQ.net.gofake1.Nightlight")!
     
     static func registerDefaults() {
-        let defaults: [String: Any] = [
-            AppDefaultKind.autoOnMode.rawValue:       AutoOnMode.manual.rawValue,
-            AppDefaultKind.autoOnFromTime.rawValue:   72000,
-            AppDefaultKind.autoOnToTime.rawValue:     28800
-        ]
-        groupDefaults.register(defaults: defaults)
+        groupDefaults.register(defaults: _defaults)
     }
 }
 

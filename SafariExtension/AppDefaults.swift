@@ -41,6 +41,10 @@ final class AppDefaults {
             groupDefaults.removeObserver(object, forKeyPath: `default`.rawValue)
         }
     }
+    
+    static func registerDefaults() {
+        groupDefaults.register(defaults: _defaults)
+    }
 }
 
 extension UserDefaults {
