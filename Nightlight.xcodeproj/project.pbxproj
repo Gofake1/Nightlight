@@ -26,6 +26,7 @@
 		63A827A520FC92F100671659 /* SafariExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 63A8279120FC92F100671659 /* SafariExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		63AAA2A5210FF89C001C2801 /* AppDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63AAA2A4210FF89C001C2801 /* AppDefaults.swift */; };
 		63AAA2A72110397A001C2801 /* Common.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63AAA2A62110397A001C2801 /* Common.swift */; };
+		63BA14A7213E18DE005BE57B /* SafariServices+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63BA14A6213E18DE005BE57B /* SafariServices+.swift */; };
 		63E03E8A2116BD5D00DC7474 /* AppDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63E03E892116BD5D00DC7474 /* AppDefaults.swift */; };
 /* End PBXBuildFile section */
 
@@ -110,6 +111,7 @@
 		63A827A220FC92F100671659 /* SafariExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SafariExtension.entitlements; sourceTree = "<group>"; };
 		63AAA2A4210FF89C001C2801 /* AppDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDefaults.swift; sourceTree = "<group>"; };
 		63AAA2A62110397A001C2801 /* Common.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Common.swift; sourceTree = "<group>"; };
+		63BA14A6213E18DE005BE57B /* SafariServices+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SafariServices+.swift"; sourceTree = "<group>"; };
 		63DB0F462101ADC8001E4051 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = SOURCE_ROOT; };
 		63DB0F472101ADC8001E4051 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = SOURCE_ROOT; };
 		63E03E892116BD5D00DC7474 /* AppDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDefaults.swift; sourceTree = "<group>"; };
@@ -235,6 +237,7 @@
 				631C622421263A8400DF9B4C /* MessageHandler.swift */,
 				63A8279620FC92F100671659 /* SafariExtensionHandler.swift */,
 				63A8279820FC92F100671659 /* SafariExtensionViewController.swift */,
+				63BA14A6213E18DE005BE57B /* SafariServices+.swift */,
 				63A8279A20FC92F100671659 /* SafariExtensionViewController.xib */,
 				63A8279E20FC92F100671659 /* script.js */,
 				63A827A020FC92F100671659 /* ToolbarItemIcon.pdf */,
@@ -420,6 +423,7 @@
 				631C622521263A8400DF9B4C /* MessageHandler.swift in Sources */,
 				63A8279720FC92F100671659 /* SafariExtensionHandler.swift in Sources */,
 				63A8279920FC92F100671659 /* SafariExtensionViewController.swift in Sources */,
+				63BA14A7213E18DE005BE57B /* SafariServices+.swift in Sources */,
 				632935E32112DC6300F3AA97 /* Solar.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

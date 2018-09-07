@@ -15,7 +15,7 @@ class SafariExtensionViewController: SFSafariExtensionViewController {
     
     static let shared: SafariExtensionViewController = {
         let shared = SafariExtensionViewController()
-        shared.preferredContentSize = NSSize(width: 320, height: 240)
+        shared.preferredContentSize = NSSize(width: 320, height: 80)
         return shared
     }()
     private lazy var df: DateFormatter = {
@@ -64,6 +64,10 @@ class SafariExtensionViewController: SFSafariExtensionViewController {
     
     @IBAction func isOnCheckboxChanged(_ sender: NSButton) {
         AppDefaults.isOn = sender.state == .on
+    }
+    
+    @IBAction func toggleForThisPage(_ sender: NSButton) {
+        SFSafariApplication.dispatchMessageToActivePage(withName: "TOGGLE")
     }
     
     func updateSunsetAutoOnLabel(sunset: Date, sunrise: Date) {

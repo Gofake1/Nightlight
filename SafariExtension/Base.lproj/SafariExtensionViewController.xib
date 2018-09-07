@@ -30,8 +30,19 @@
                         <action selector="isOnCheckboxChanged:" target="-2" id="9VS-7k-8fS"/>
                     </connections>
                 </button>
+                <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="XE2-oo-x59">
+                    <rect key="frame" x="151" y="74" width="165" height="32"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                    <buttonCell key="cell" type="push" title="Toggle for This Page" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="Ube-EZ-DJR">
+                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="system"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="toggleForThisPage:" target="-2" id="cYj-Mf-7zt"/>
+                    </connections>
+                </button>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="fEv-OM-Auw">
-                    <rect key="frame" x="20" y="60" width="292" height="17"/>
+                    <rect key="frame" x="20" y="56" width="292" height="17"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" lineBreakMode="clipping" title="Label" id="2li-sm-QSg">
                         <font key="font" metaFont="system"/>

@@ -19,9 +19,7 @@ final class SafariExtensionHandler: SFSafariExtensionHandler {
     override func messageReceived(withName messageName: String, from page: SFSafariPage, userInfo: [String: Any]?) {
         switch messageName {
         case "READY":
-            MessageHandler.stateReady(page: page, userInfo: userInfo)
-        case "processedStyles":
-            MessageHandler.processedStyles(page: page, userInfo: userInfo)
+            MessageHandler.stateReady(page: page)
         default:
             fatalError()
         }

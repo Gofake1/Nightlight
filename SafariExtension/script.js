@@ -4,7 +4,7 @@ const BASIC = 'html{background-color:#000;color:#fff;}a{color:lightblue !importa
 // Workaround: Bug in Safari that breaks current approach in certain cases
 // (rdar://42491788). This is a clumsy fallback that's bad for pages that 
 // Safari isn't broken for, but better than nothing for pages that are.
-const HACKS = 'body,h1,h2,h3,h4{background-color:#000 !important;color:#fff !important;}blockquote,div,header,main,nav,section,span,table,td,tr{background-color:rgba(0,0,0,0.5) !important;color:#fff !important;}p{color:#fff !important;}ul{background-color:#000 !important;}';
+const HACKS = 'body,h1,h2,h3,h4{background-color:#000 !important;color:#fff !important;}blockquote,div,header,main,nav,pre,section,span,table,td,tr{background-color:rgba(0,0,0,0.5) !important;color:#fff !important;}p{color:#fff !important;}ul{background-color:#000 !important;}';
 const COLOR_DARKEN_PROPS = [
 'backgroundColor',
 'floodColor',
@@ -84,71 +84,74 @@ const STATES = {
   DISABLED: 2
 };
 const VALID_MEDIA_TYPES = ['', 'all', 'screen'];
-const VAR_CANVAS_CTX = function() {
-  const c = document.createElement('canvas');
-  c.height = 1;
-  c.width = 1;
-  return c.getContext('2d');
-}();
-const VAR_COLORS = {};
+//const VAR_CANVAS_CTX = function() {
+//  const c = document.createElement('canvas');
+//  c.height = 1;
+//  c.width = 1;
+//  return c.getContext('2d');
+//}();
+//const VAR_COLORS = {};
 let STATE = STATES.NEW;
 let STYLES = [];
 
-window.top.onload = () => {
-  // Strip query parameters from href
-  const hrefs = getHrefStyleSheets().map(s => s.href.split('?')[0]);
-  // Send hrefs to receive cached styles. The START message contains the 
-  // cached styles. If not all hrefs have a corresponding cached style, the 
-  // extension will respond with START_AND_PROCESS to update its cache.
-  safari.extension.dispatchMessage('READY', { 'hrefs': hrefs });
+window.top.onload = function() {
+  safari.extension.dispatchMessage('READY');
 };
 
 safari.self.addEventListener('message', event => {
   switch(event.name) {
   case 'START':
-    if(STATE == STATES.NEW) {
-      console.assert(STYLES == []);
-      const processedStyles = event.message;
-      const processedInlineStyles = getHrefStyleSheets()
-        .map(makeProcessedStyle).filter(str => str != '');
-      STYLES = makeAndAddStyles([BASIC, HACKS].concat(processedStyles)
-        .concat(processedInlineStyles));
-    } else {
+    switch(STATE) {
+    case STATES.NEW:
+      STYLES = start();
+      STATE = STATES.ENABLED
+      break;
+    case STATES.ENABLED:
+      // Do nothing
+      break;
+    case STATES.DISABLED:
       enableStyles(STYLES);
+      STATE = STATES.ENABLED;
+      break;
     }
-    STATE = STATES.ENABLED;
-    break;
-
-  case 'START_AND_PROCESS':
-    function a(s) {
-      return { href: s.href, newStyle: makeProcessedStyle(s) };
-    }
-
-//    console.assert(STATE == STATES.NEW);
-    const processedHrefsAndStyles = getHrefStyleSheets().map(a);
-    const processedInlineStyles = getInlineStyleSheets()
-      .map(makeProcessedStyle);
-    STYLES = makeAndAddStyles([BASIC, HACKS]
-      .concat(processedHrefsAndStyles.map(a => a.newStyle)
-        .filter(str => str != ''))
-      .concat(processedInlineStyles.filter(str => str != '')));
-    // Inline styles are not sent to be cached
-    const toBeCached = processedHrefsAndStyles.reduce((obj, a) => {
-      obj[a.href] = a.newStyle;
-      return obj;
-    }, {});
-    safari.extension.dispatchMessage('processedStyles', toBeCached);
-    STATE = STATES.ENABLED;
-    console.log('href', processedHrefsAndStyles.map(a => a.newStyle)); //*
-    console.log('inline', processedInlineStyles);
     break;
 
   case 'STOP':
-    disableStyles(STYLES);
-    STATE = STATES.DISABLED;
+    if(STATE == STATES.ENABLED) {
+      disableStyles(STYLES);
+      STATE = STATES.DISABLED;
+    }
+    break;
+
+  case 'TOGGLE':
+    switch(STATE) {
+    case STATES.NEW:
+      STYLES = start();
+      STATE = STATES.ENABLED;
+      break;
+    case STATES.ENABLED:
+      disableStyles(STYLES);
+      STATE = STATES.DISABLED;
+      break;
+    case STATES.DISABLED:
+      enableStyles(STYLES);
+      STATE = STATES.ENABLED;
+      break;
+    }
     break;
   }
 });
+
+function start() {
+  const processedHrefStyles = getHrefStyleSheets()
+    .map(makeProcessedStyle).filter(str => str != '');
+  const processedInlineStyles = getInlineStyleSheets()
+    .map(makeProcessedStyle).filter(str => str != '');
+//  console.log('href', processedHrefStyles); //*
+//  console.log('inline', processedInlineStyles); //*
+  return makeAndAddStyles([BASIC, HACKS].concat(processedHrefStyles)
+    .concat(processedInlineStyles));
+}
 
 function getHrefStyleSheets() {
   return [].slice.call(document.styleSheets)

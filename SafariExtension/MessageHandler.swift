@@ -11,12 +11,8 @@ import SafariServices
 final class MessageHandler {
     fileprivate static var impl = AppDefaults.isOn.makeMessageHandlerImpl()
     
-    static func stateReady(page: SFSafariPage, userInfo: [String: Any]?) {
-        impl.stateReady(page: page, userInfo: userInfo)
-    }
-    
-    static func processedStyles(page: SFSafariPage, userInfo: [String: Any]?) {
-        impl.processedStyles(page: page, userInfo: userInfo)
+    static func stateReady(page: SFSafariPage) {
+        impl.stateReady(page: page)
     }
 }
 
@@ -45,8 +41,7 @@ final class IsOnObserver: NSObject {
 }
 
 protocol MessageHandlerImplType {
-    func stateReady(page: SFSafariPage, userInfo: [String: Any]?)
-    func processedStyles(page: SFSafariPage, userInfo: [String: Any]?)
+    func stateReady(page: SFSafariPage)
 }
 
 final class DisabledMessageHandlerImpl {
@@ -57,55 +52,24 @@ final class DisabledMessageHandlerImpl {
 
 final class EnabledMessageHandlerImpl {
     init() {
-        SFSafariApplication.dispatchMessageToActivePage(withName: "START_AND_PROCESS") // TODO
+        SFSafariApplication.dispatchMessageToActivePage(withName: "START")
     }
 }
 
 extension DisabledMessageHandlerImpl: MessageHandlerImplType {
-    func stateReady(page: SFSafariPage, userInfo: [String: Any]?) {
-        // Do nothing
-    }
-    
-    func processedStyles(page: SFSafariPage, userInfo: [String: Any]?) {
+    func stateReady(page: SFSafariPage) {
         // Do nothing
     }
 }
 
 extension EnabledMessageHandlerImpl: MessageHandlerImplType {
-    func stateReady(page: SFSafariPage, userInfo: [String: Any]?) {
-        if let hrefs = userInfo?["hrefs"] as? [String] {
-            // TODO: Read cached styles
-            // if cachedStyles == nil {
-            //     page.dispatchMessageToScript(withName: "START_AND_PROCESS")
-            // } else {
-            //     page.dispatchMessageToScript(withName: "START", userInfo: cachedStyles)
-            // }
-            page.dispatchMessageToScript(withName: "START_AND_PROCESS") // TODO
-        } else {
-            page.dispatchMessageToScript(withName: "START_AND_PROCESS")
-        }
-    }
-    
-    func processedStyles(page: SFSafariPage, userInfo: [String: Any]?) {
-        // TODO: Caching
-        NSLog("\(userInfo ?? [:])") //*
+    func stateReady(page: SFSafariPage) {
+        page.dispatchMessageToScript(withName: "START")
     }
 }
 
 extension Bool {
     fileprivate func makeMessageHandlerImpl() -> MessageHandlerImplType {
         return self ? EnabledMessageHandlerImpl() : DisabledMessageHandlerImpl()
-    }
-}
-
-extension SFSafariApplication {
-    fileprivate static func dispatchMessageToActivePage(withName name: String) {
-        getActiveWindow {
-            $0?.getActiveTab {
-                $0?.getActivePage {
-                    $0?.dispatchMessageToScript(withName: name, userInfo: nil)
-                }
-            }
-        }
     }
 }

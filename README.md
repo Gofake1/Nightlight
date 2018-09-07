@@ -1,13 +1,9 @@
-# [Nightlight](https://gofake1.net/projects/nightlight.html)
+# [Nightlight](https://gofake1.net/projects/nightlight.html)<img src="https://gofake1.net/images/nightlight_icon.png" align="right" height="50">
 Browse the internet more comfortably at night
 
-![Nightlight screenshot](https://gofake1.net/images/nightlight.jpg)
+![Nightlight screenshot](https://gofake1.net/images/nightlight_hero.jpg)
 
-Nightlight is a browser extension that darkens websites while attempting to preserve their original design. It may not achieve the best results for complex websites; if you visit such sites frequently, you may find [Stylish](https://userstyles.org) more appropriate.
-
-### Under Construction
-
-* Temporary workaround for a Safari bug
+Nightlight is a Safari app extension that darkens websites while attempting to preserve their original designs. Currently, there is a bug in Safari (rdar://42491788) that requires a workaround that just makes everything black. Please consider duplicating the radar to increase the chance the bug gets fixed.
 
 ### Acknowledgements
 

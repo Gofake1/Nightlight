@@ -11,4 +11,8 @@ import Cocoa
 @NSApplicationMain
 class AppDelegate: NSObject {}
 
-extension AppDelegate: NSApplicationDelegate {}
+extension AppDelegate: NSApplicationDelegate {
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        return true
+    }
+}
