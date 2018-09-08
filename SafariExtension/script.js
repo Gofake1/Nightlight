@@ -84,17 +84,13 @@ const STATES = {
   DISABLED: 2
 };
 const VALID_MEDIA_TYPES = ['', 'all', 'screen'];
-//const VAR_CANVAS_CTX = function() {
-//  const c = document.createElement('canvas');
-//  c.height = 1;
-//  c.width = 1;
-//  return c.getContext('2d');
-//}();
-//const VAR_COLORS = {};
+const VAR_DIV = document.createElement('div');
+const VAR_COLORS = {};
 let STATE = STATES.NEW;
 let STYLES = [];
 
 window.top.onload = function() {
+  document.body.appendChild(VAR_DIV);
   safari.extension.dispatchMessage('READY');
 };
 
@@ -297,18 +293,21 @@ function makeProcessedHex(str, f_rgba) {
 // https://stackoverflow.com/questions/1573053/javascript-function-to-convert-color-names-to-hex-codes
 function makeProcessedVar(str, f_rgba) {
   if(VAR_COLORS[str]) {
-    console.log('hit', str, VAR_COLORS[str]); //*
+//    console.log('hit', str, VAR_COLORS[str]); //*
     return VAR_COLORS[str];
   } else {
-    // VAR_CANVAS_CTX.clearRect(0, 0, 1, 1);
-    // VAR_CANVAS_CTX.fillStyle = str;
-    // VAR_CANVAS_CTX.fillRect(0, 0, 1, 1);
-    // const u = VAR_CANVAS_CTX.getImageData(0, 0, 1, 1).data;
-    // const p = f_rgba(u[0], u[1], u[2], u[3]/255);
-    // VAR_COLORS[str] = 'rgba('+p.r+','+p.g+','+p.b+','+p.a+')';
-    // console.log('miss', str, VAR_COLORS[str]); //*
-    // return VAR_COLORS[str];
-    return null; // FIXME
+    VAR_DIV.style.color = str;
+    const computedColor = window.getComputedStyle(VAR_DIV).color;
+    const p = function() {
+      if(computedColor.substring(0, 4) == 'rgb(') {
+        return makeProcessedRGB(computedColor, f_rgba);
+      } else {
+        return makeProcessedRGBA(computedColor, f_rgba);
+      }
+    }()
+    VAR_COLORS[str] = p;
+//    console.log('miss', str, computedColor, p); //*
+    return p;
   }
 }
 
