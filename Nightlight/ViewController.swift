@@ -6,11 +6,11 @@
 //  Copyright © 2018 Gofake1. All rights reserved.
 //
 
-import Cocoa
+import AppKit
 import CoreLocation
 import SafariServices
 
-class ViewController: NSViewController {
+final class ViewController: NSViewController {
     @IBOutlet weak var extensionStatusLabel: NSTextField!
     @IBOutlet weak var manualRadio: NSButton!
     @IBOutlet weak var customRadio: NSButton!

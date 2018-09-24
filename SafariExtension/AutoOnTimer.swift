@@ -43,8 +43,8 @@ final class CustomTimer: NSObject {
         super.init()
         onTimer = makeTimer(seconds: AppDefaults.autoOnFromTime) { AppDefaults.isOn = true }
         offTimer = makeTimer(seconds: AppDefaults.autoOnToTime) { AppDefaults.isOn = false }
-        RunLoop.main.add(onTimer, forMode: .commonModes)
-        RunLoop.main.add(offTimer, forMode: .commonModes)
+        RunLoop.main.add(onTimer, forMode: .common)
+        RunLoop.main.add(offTimer, forMode: .common)
         AppDefaults.addObserver(self, forDefaults: [.autoOnFromTime, .autoOnToTime])
     }
     
@@ -55,11 +55,11 @@ final class CustomTimer: NSObject {
         case .autoOnFromTime:
             onTimer.invalidate()
             onTimer = makeTimer(seconds: change![.newKey]! as! Int) { AppDefaults.isOn = true }
-            RunLoop.main.add(onTimer, forMode: .commonModes)
+            RunLoop.main.add(onTimer, forMode: .common)
         case .autoOnToTime:
             offTimer.invalidate()
             offTimer = makeTimer(seconds: change![.newKey]! as! Int) { AppDefaults.isOn = false }
-            RunLoop.main.add(offTimer, forMode: .commonModes)
+            RunLoop.main.add(offTimer, forMode: .common)
         default:
             fatalError()
         }
@@ -87,8 +87,8 @@ final class SunsetTimer: NSObject {
             let coordinate = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
             if let (sunset, sunrise) = coordinate.makeSolarDates() {
                 (onTimer, offTimer) = makeTimers(sunset: sunset, sunrise: sunrise, coordinate: coordinate)
-                RunLoop.main.add(onTimer, forMode: .commonModes)
-                RunLoop.main.add(offTimer, forMode: .commonModes)
+                RunLoop.main.add(onTimer, forMode: .common)
+                RunLoop.main.add(offTimer, forMode: .common)
             }
         }
         AppDefaults.addObserver(self, forDefaults: [.autoOnLatitude, .autoOnLongitude])
@@ -115,8 +115,8 @@ final class SunsetTimer: NSObject {
         onTimer.invalidate()
         offTimer.invalidate()
         (onTimer, offTimer) = makeTimers(sunset: sunset, sunrise: sunrise, coordinate: coordinate)
-        RunLoop.main.add(onTimer, forMode: .commonModes)
-        RunLoop.main.add(offTimer, forMode: .commonModes)
+        RunLoop.main.add(onTimer, forMode: .common)
+        RunLoop.main.add(offTimer, forMode: .common)
     }
     
     private func makeTimers(sunset: Date, sunrise: Date, coordinate: CLLocationCoordinate2D) -> (Timer, Timer) {

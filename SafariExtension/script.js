@@ -1,6 +1,6 @@
 // Inline HTML attributes don't figure into the darkening process and are simply ignored
 
-const BASIC = 'html{background-color:#000;color:#fff;}a{color:lightblue !important;}img{filter:brightness(75%);}img[src*="svg"]{filter:invert(100%);}input,textarea{background-color:#000 !important;color:#fff !important;}input[type="search"]{-webkit-appearance:none;}';
+const BASIC = 'html{background-color:#000;color:#fff;}a{color:lightblue !important;}canvas{background-color:#000 !important;}img{filter:brightness(75%);}img[src*="svg"],svg{filter:invert(100%);}input,textarea{background-color:#000 !important;color:#fff !important;}input[type="search"]{-webkit-appearance:none;}';
 // Workaround: Bug in Safari that breaks current approach in certain cases
 // (rdar://42491788). This is a clumsy fallback that's bad for pages that 
 // Safari isn't broken for, but better than nothing for pages that are.
@@ -84,59 +84,66 @@ const STATES = {
   DISABLED: 2
 };
 const VALID_MEDIA_TYPES = ['', 'all', 'screen'];
-const VAR_DIV = document.createElement('div');
+const VAR_DIV = function() {
+  const div = document.createElement('div');
+  div.id = '_nightlight_cssvar_tester';
+  return div;
+}();
 const VAR_COLORS = {};
 let STATE = STATES.NEW;
 let STYLES = [];
 
-window.top.onload = function() {
-  document.body.appendChild(VAR_DIV);
-  safari.extension.dispatchMessage('READY');
-};
+if(window == window.top) {
+  safari.self.addEventListener('message', event => {
+    switch(event.name) {
+    case 'START':
+      switch(STATE) {
+      case STATES.NEW:
+        STYLES = start();
+        STATE = STATES.ENABLED;
+        break;
+      case STATES.ENABLED:
+        // Do nothing
+        break;
+      case STATES.DISABLED:
+        enableStyles(STYLES);
+        STATE = STATES.ENABLED;
+        break;
+      }
+      break;
 
-safari.self.addEventListener('message', event => {
-  switch(event.name) {
-  case 'START':
-    switch(STATE) {
-    case STATES.NEW:
-      STYLES = start();
-      STATE = STATES.ENABLED
+    case 'STOP':
+      if(STATE == STATES.ENABLED) {
+        disableStyles(STYLES);
+        STATE = STATES.DISABLED;
+      }
       break;
-    case STATES.ENABLED:
-      // Do nothing
-      break;
-    case STATES.DISABLED:
-      enableStyles(STYLES);
-      STATE = STATES.ENABLED;
+
+    case 'TOGGLE':
+      switch(STATE) {
+      case STATES.NEW:
+        STYLES = start();
+        STATE = STATES.ENABLED;
+        break;
+      case STATES.ENABLED:
+        disableStyles(STYLES);
+        STATE = STATES.DISABLED;
+        break;
+      case STATES.DISABLED:
+        enableStyles(STYLES);
+        STATE = STATES.ENABLED;
+        break;
+      }
       break;
     }
-    break;
+  });
 
-  case 'STOP':
-    if(STATE == STATES.ENABLED) {
-      disableStyles(STYLES);
-      STATE = STATES.DISABLED;
-    }
-    break;
-
-  case 'TOGGLE':
-    switch(STATE) {
-    case STATES.NEW:
-      STYLES = start();
-      STATE = STATES.ENABLED;
-      break;
-    case STATES.ENABLED:
-      disableStyles(STYLES);
-      STATE = STATES.DISABLED;
-      break;
-    case STATES.DISABLED:
-      enableStyles(STYLES);
-      STATE = STATES.ENABLED;
-      break;
-    }
-    break;
-  }
-});
+  window.onload = function(event) {
+    document.body.appendChild(VAR_DIV);
+    // TODO: MutationObserver filtering by style tag
+    safari.extension.dispatchMessage('READY');
+  };
+}
 
 function start() {
   const processedHrefStyles = getHrefStyleSheets()
@@ -304,7 +311,7 @@ function makeProcessedVar(str, f_rgba) {
       } else {
         return makeProcessedRGBA(computedColor, f_rgba);
       }
-    }()
+    }();
     VAR_COLORS[str] = p;
 //    console.log('miss', str, computedColor, p); //*
     return p;

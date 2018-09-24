@@ -9,7 +9,7 @@
 import CoreLocation
 import SafariServices
 
-class SafariExtensionViewController: SFSafariExtensionViewController {
+final class SafariExtensionViewController: SFSafariExtensionViewController {
     @IBOutlet weak var isOnCheckbox: NSButton!
     @IBOutlet weak var autoOnLabel: NSTextField!
     

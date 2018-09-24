@@ -13,11 +13,11 @@
 		631C622521263A8400DF9B4C /* MessageHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 631C622421263A8400DF9B4C /* MessageHandler.swift */; };
 		632935D62112DC3A00F3AA97 /* Solar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 632935BC2112DC3A00F3AA97 /* Solar.swift */; };
 		632935E32112DC6300F3AA97 /* Solar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 632935BC2112DC3A00F3AA97 /* Solar.swift */; };
+		6355EDC12151DA0B006092C2 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6355EDC02151DA0B006092C2 /* AppKit.framework */; };
 		63A8277E20FC922500671659 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63A8277D20FC922500671659 /* AppDelegate.swift */; };
 		63A8278020FC922500671659 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63A8277F20FC922500671659 /* ViewController.swift */; };
 		63A8278220FC922900671659 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 63A8278120FC922900671659 /* Assets.xcassets */; };
 		63A8278520FC922900671659 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 63A8278320FC922900671659 /* Main.storyboard */; };
-		63A8279420FC92F100671659 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63A8279320FC92F100671659 /* Cocoa.framework */; };
 		63A8279720FC92F100671659 /* SafariExtensionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63A8279620FC92F100671659 /* SafariExtensionHandler.swift */; };
 		63A8279920FC92F100671659 /* SafariExtensionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63A8279820FC92F100671659 /* SafariExtensionViewController.swift */; };
 		63A8279C20FC92F100671659 /* SafariExtensionViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 63A8279A20FC92F100671659 /* SafariExtensionViewController.xib */; };
@@ -93,6 +93,7 @@
 		632935CA2112DC3A00F3AA97 /* .gitignore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		632935CB2112DC3A00F3AA97 /* Solar.podspec */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Solar.podspec; sourceTree = "<group>"; };
 		632935CC2112DC3A00F3AA97 /* .travis.yml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .travis.yml; sourceTree = "<group>"; };
+		6355EDC02151DA0B006092C2 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		63A8277A20FC922500671659 /* Nightlight.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Nightlight.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		63A8277D20FC922500671659 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		63A8277F20FC922500671659 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -101,7 +102,6 @@
 		63A8278620FC922900671659 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		63A8278720FC922900671659 /* Nightlight.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Nightlight.entitlements; sourceTree = "<group>"; };
 		63A8279120FC92F100671659 /* SafariExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = SafariExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
-		63A8279320FC92F100671659 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		63A8279620FC92F100671659 /* SafariExtensionHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariExtensionHandler.swift; sourceTree = "<group>"; };
 		63A8279820FC92F100671659 /* SafariExtensionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariExtensionViewController.swift; sourceTree = "<group>"; };
 		63A8279B20FC92F100671659 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/SafariExtensionViewController.xib; sourceTree = "<group>"; };
@@ -129,7 +129,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				63A8279420FC92F100671659 /* Cocoa.framework in Frameworks */,
+				6355EDC12151DA0B006092C2 /* AppKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -223,7 +223,7 @@
 		63A8279220FC92F100671659 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				63A8279320FC92F100671659 /* Cocoa.framework */,
+				6355EDC02151DA0B006092C2 /* AppKit.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -322,7 +322,7 @@
 								enabled = 1;
 							};
 							com.apple.HardenedRuntime = {
-								enabled = 0;
+								enabled = 1;
 							};
 						};
 					};
@@ -621,6 +621,7 @@
 				CODE_SIGN_ENTITLEMENTS = SafariExtension/SafariExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = W6KLMFETUQ;
+				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = SafariExtension/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -640,6 +641,7 @@
 				CODE_SIGN_ENTITLEMENTS = SafariExtension/SafariExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = W6KLMFETUQ;
+				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = SafariExtension/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

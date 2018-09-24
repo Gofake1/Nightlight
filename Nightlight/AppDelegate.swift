@@ -6,10 +6,10 @@
 //  Copyright © 2018 Gofake1. All rights reserved.
 //
 
-import Cocoa
+import AppKit
 
 @NSApplicationMain
-class AppDelegate: NSObject {}
+final class AppDelegate: NSObject {}
 
 extension AppDelegate: NSApplicationDelegate {
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
