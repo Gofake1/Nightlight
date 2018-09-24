@@ -4,7 +4,8 @@ const BASIC = 'html{background-color:#000;color:#fff;}a{color:lightblue !importa
 // Workaround: Bug in Safari that breaks current approach in certain cases
 // (rdar://42491788). This is a clumsy fallback that's bad for pages that 
 // Safari isn't broken for, but better than nothing for pages that are.
-const HACKS = 'body,h1,h2,h3,h4{background-color:#000 !important;color:#fff !important;}blockquote,div,header,main,nav,pre,section,span,table,td,tr{background-color:rgba(0,0,0,0.5) !important;color:#fff !important;}p{color:#fff !important;}ul{background-color:#000 !important;}';
+const HACKS_GENERAL = 'body,h1,h2,h3,h4{background-color:#000 !important;color:#fff !important;}blockquote,div,header,main,nav,pre,section,span,table,td,tr{background-color:rgba(0,0,0,0.5) !important;color:#fff !important;}p{color:#fff !important;}ul{background-color:#000 !important;}';
+const HACKS_SITE_SPECIFIC = ''; // TODO: Medium blogs
 const COLOR_DARKEN_PROPS = [
 'backgroundColor',
 'floodColor',
@@ -99,7 +100,7 @@ if(window == window.top) {
     case 'START':
       switch(STATE) {
       case STATES.NEW:
-        STYLES = start();
+        STYLES = falseStart();
         STATE = STATES.ENABLED;
         break;
       case STATES.ENABLED:
@@ -141,8 +142,16 @@ if(window == window.top) {
   window.onload = function(event) {
     document.body.appendChild(VAR_DIV);
     // TODO: MutationObserver filtering by style tag
-    safari.extension.dispatchMessage('READY');
+    removeStyles(STYLES);
+    STYLES = start();
   };
+
+  safari.extension.dispatchMessage('READY');
+}
+
+// Darken before document finishes loading
+function falseStart() {
+  return makeAndAddStyles([BASIC, HACKS_GENERAL, HACKS_SITE_SPECIFIC]);
 }
 
 function start() {
@@ -152,7 +161,8 @@ function start() {
     .map(makeProcessedStyle).filter(str => str != '');
 //  console.log('href', processedHrefStyles); //*
 //  console.log('inline', processedInlineStyles); //*
-  return makeAndAddStyles([BASIC, HACKS].concat(processedHrefStyles)
+  return makeAndAddStyles([BASIC, HACKS_GENERAL, HACKS_SITE_SPECIFIC]
+    .concat(processedHrefStyles)
     .concat(processedInlineStyles));
 }
 
@@ -393,4 +403,8 @@ function enableStyles(styles) {
 
 function disableStyles(styles) {
   styles.forEach(s => s.disabled = true);
+}
+
+function removeStyles(styles) {
+  styles.forEach(s => s.parentNode.removeChild(s));
 }
