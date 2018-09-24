@@ -311,7 +311,7 @@
 								enabled = 1;
 							};
 							com.apple.HardenedRuntime = {
-								enabled = 1;
+								enabled = 0;
 							};
 						};
 					};
@@ -322,7 +322,7 @@
 								enabled = 1;
 							};
 							com.apple.HardenedRuntime = {
-								enabled = 1;
+								enabled = 0;
 							};
 						};
 					};
@@ -582,7 +582,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = W6KLMFETUQ;
-				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = Nightlight/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -603,7 +602,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = W6KLMFETUQ;
-				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = Nightlight/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -621,7 +619,6 @@
 				CODE_SIGN_ENTITLEMENTS = SafariExtension/SafariExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = W6KLMFETUQ;
-				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = SafariExtension/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -641,7 +638,6 @@
 				CODE_SIGN_ENTITLEMENTS = SafariExtension/SafariExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = W6KLMFETUQ;
-				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = SafariExtension/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
