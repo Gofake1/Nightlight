@@ -1,6 +1,6 @@
 // Inline HTML attributes don't figure into the darkening process and are simply ignored
 
-const BASIC = 'html{background-color:#000;color:#fff;}a{color:lightblue !important;}canvas{background-color:#000 !important;}img{filter:brightness(75%);}img[src*="svg"],svg{filter:invert(100%);}input,textarea{background-color:#000 !important;color:#fff !important;}input[type="search"]{-webkit-appearance:none;}';
+const BASIC = 'html{background-color:#000;color:#fff;}a{color:lightblue !important;}canvas{background-color:rgba(0,0,0,0.5) !important;}img{filter:brightness(75%);}img[src*="svg"],svg{filter:invert(100%);}input,textarea{background-color:#000 !important;color:#fff !important;}input[type="search"]{-webkit-appearance:none;}';
 // Workaround: Bug in Safari that breaks current approach in certain cases
 // (rdar://42491788). This is a clumsy fallback that's bad for pages that 
 // Safari isn't broken for, but better than nothing for pages that are.
@@ -142,8 +142,10 @@ if(window == window.top) {
   window.onload = function(event) {
     document.body.appendChild(VAR_DIV);
     // TODO: MutationObserver filtering by style tag
-    removeStyles(STYLES);
-    STYLES = start();
+    if(STATE == STATES.ENABLED) {
+      removeStyles(STYLES);
+      STYLES = start();
+    }
   };
 
   safari.extension.dispatchMessage('READY');
