@@ -94,62 +94,60 @@ const VAR_COLORS = {};
 let STATE = STATES.NEW;
 let STYLES = [];
 
-if(window == window.top) {
-  safari.self.addEventListener('message', event => {
-    switch(event.name) {
-    case 'START':
-      switch(STATE) {
-      case STATES.NEW:
-        STYLES = falseStart();
-        STATE = STATES.ENABLED;
-        break;
-      case STATES.ENABLED:
-        // Do nothing
-        break;
-      case STATES.DISABLED:
-        enableStyles(STYLES);
-        STATE = STATES.ENABLED;
-        break;
-      }
+safari.self.addEventListener('message', event => {
+  switch(event.name) {
+  case 'START':
+    switch(STATE) {
+    case STATES.NEW:
+      STYLES = falseStart();
+      STATE = STATES.ENABLED;
       break;
-
-    case 'STOP':
-      if(STATE == STATES.ENABLED) {
-        disableStyles(STYLES);
-        STATE = STATES.DISABLED;
-      }
+    case STATES.ENABLED:
+      // Do nothing
       break;
-
-    case 'TOGGLE':
-      switch(STATE) {
-      case STATES.NEW:
-        STYLES = start();
-        STATE = STATES.ENABLED;
-        break;
-      case STATES.ENABLED:
-        disableStyles(STYLES);
-        STATE = STATES.DISABLED;
-        break;
-      case STATES.DISABLED:
-        enableStyles(STYLES);
-        STATE = STATES.ENABLED;
-        break;
-      }
+    case STATES.DISABLED:
+      enableStyles(STYLES);
+      STATE = STATES.ENABLED;
       break;
     }
-  });
+    break;
 
-  window.onload = function(event) {
-    document.body.appendChild(VAR_DIV);
-    // TODO: MutationObserver filtering by style tag
+  case 'STOP':
     if(STATE == STATES.ENABLED) {
-      removeStyles(STYLES);
-      STYLES = start();
+      disableStyles(STYLES);
+      STATE = STATES.DISABLED;
     }
-  };
+    break;
 
-  safari.extension.dispatchMessage('READY');
-}
+  case 'TOGGLE':
+    switch(STATE) {
+    case STATES.NEW:
+      STYLES = start();
+      STATE = STATES.ENABLED;
+      break;
+    case STATES.ENABLED:
+      disableStyles(STYLES);
+      STATE = STATES.DISABLED;
+      break;
+    case STATES.DISABLED:
+      enableStyles(STYLES);
+      STATE = STATES.ENABLED;
+      break;
+    }
+    break;
+  }
+});
+
+window.onload = function(event) {
+  document.body.appendChild(VAR_DIV);
+  // TODO: MutationObserver filtering by style tag
+  if(STATE == STATES.ENABLED) {
+    removeStyles(STYLES);
+    STYLES = start();
+  }
+};
+
+safari.extension.dispatchMessage('READY');
 
 // Darken before document finishes loading
 function falseStart() {
