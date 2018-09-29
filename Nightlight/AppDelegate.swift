@@ -9,7 +9,11 @@
 import AppKit
 
 @NSApplicationMain
-final class AppDelegate: NSObject {}
+final class AppDelegate: NSObject {
+    @IBAction func showHelp(_ sender: NSMenuItem) {
+        NSWorkspace.shared.open(URL(string: "https://gofake1.net/projects/nightlight.html")!)
+    }
+}
 
 extension AppDelegate: NSApplicationDelegate {
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
