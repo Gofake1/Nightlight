@@ -1,19 +1,100 @@
-// Inline HTML attributes don't figure into the darkening process and are simply ignored
+class BundleList {
+  constructor(bundles, enabled) {
+    this.bundles = bundles;
+    this.enabled = enabled;
+  }
+  setEnabled(enabled) {
+    this.enabled = enabled;
+    if(enabled) {
+      this.bundles.forEach(b => b.enable());
+    } else {
+      this.bundles.forEach(b => b.disable());
+    }
+  }
+  hotload(newBundles) {
+    this.bundles = this.bundles.concat(newBundles);
+    if(this.enabled) {
+      newBundles.forEach(b => b.enable());
+    }
+  }
+}
 
-const BASIC = 'html{background-color:#000;color:#fff;}a{color:lightblue !important;}canvas{background-color:rgba(0,0,0,0.5) !important;}img{filter:brightness(75%);}img[src*="svg"],svg{filter:invert(100%);}input,textarea{background-color:#000 !important;color:#fff !important;}input[type="search"]{-webkit-appearance:none;}';
+class StyleSheetBundle {
+  constructor(str) {
+    this.styleSheet = document.createElement('style');
+    this.styleSheet.appendChild(document.createTextNode(str));
+    this.styleSheet.disabled = true;
+    this.styleSheet.id = '_nightlight_'+StyleSheetBundle.nextId();
+    document.head.appendChild(this.styleSheet);
+  }
+  enable() {
+    this.styleSheet.disabled = false;
+  }
+  disable() {
+    this.styleSheet.disabled = true;
+  }
+  static nextId() {
+    const id = StyleSheetBundle.id;
+    StyleSheetBundle.id++;
+    return id;
+  }
+}
+StyleSheetBundle.id = 0;
+
+class StyleAttributeBundle {
+  constructor(node, originalStyle, newStyle) {
+    this.node = node;
+    this.originalStyle = originalStyle;
+    this.newStyle = newStyle;
+  }
+  enable() {
+    this.node.style = this.newStyle;
+  }
+  disable() {
+    this.node.style = this.originalStyle;
+  }
+}
+
+class SvgFillBundle {
+  constructor(node, originalFill, newFill) {
+    this.node = node;
+    this.originalFill = originalFill;
+    this.newFill = newFill;
+  }
+  enable() {
+    this.node.setAttribute('fill', this.newFill);
+  }
+  disable() {
+    this.node.setAttribute('fill', this.originalFill);
+  }
+}
+
+class ImageBundle {
+  constructor(node, originalSrc, newSrc) {
+    this.node = node;
+    this.originalSrc = originalSrc;
+    this.newSrc = newSrc;
+  }
+  enable() {
+    this.node.src = this.newSrc;
+  }
+  disable() {
+    this.node.src = this.originalSrc;
+  }
+}
+
+const BASIC = 'html{background-color:rgb(8,8,8);color:#d2d2d2;}a{color:#56a9ff !important;}canvas{background-color:rgba(8,8,8,0.5) !important;}img{filter:brightness(75%);}input,textarea{background-color:rgb(8,8,8) !important;color:#d2d2d2 !important;}input[type="search"]{-webkit-appearance:none;}';
 // Workaround: Bug in Safari that breaks current approach in certain cases
 // (rdar://42491788). This is a clumsy fallback that's bad for pages that 
 // Safari isn't broken for, but better than nothing for pages that are.
-const HACKS_GENERAL = 'body,h1,h2,h3,h4{background-color:#000 !important;color:#fff !important;}blockquote,div,header,main,nav,pre,section,span,table,td,tr{background-color:rgba(0,0,0,0.5) !important;color:#fff !important;}p{color:#fff !important;}ul{background-color:#000 !important;}';
+const HACKS_GENERAL = 'body,h1,h2,h3,h4{background-color:rgb(8,8,8) !important;color:#d2d2d2 !important;}blockquote,div,header,main,nav,pre,section,span,table,td,tr{background-color:rgba(8,8,8,0.5) !important;color:#d2d2d2 !important;}code{background-color: none !important;}p{color:#d2d2d2 !important;}ul{background-color:rgb(8,8,8) !important;}';
 const HACKS_SITE_SPECIFIC = ''; // TODO: Medium blogs
-const COLOR_DARKEN_PROPS = [
+const DARK_PROPS = [
 'backgroundColor',
-'floodColor',
-'lightingColor',
 'webkitTextFillColor'
 ];
 // TODO: Deduplicate processed border rules
-const COLOR_LIGHTEN_PROPS = [
+const LIGHT_PROPS = [
 'borderBottomColor',
 'borderColor',
 'borderLeftColor',
@@ -23,8 +104,6 @@ const COLOR_LIGHTEN_PROPS = [
 'color',
 'columnRuleColor',
 'outlineColor',
-'stopColor',
-'strokeColor',
 'webkitBorderAfterColor',
 'webkitBorderBeforeColor',
 'webkitBorderEndColor',
@@ -33,6 +112,7 @@ const COLOR_LIGHTEN_PROPS = [
 'webkitTextEmphasisColor',
 'webkitTextStrokeColor'
 ];
+const VALID_MEDIA_TYPES = ['', 'all', 'screen'];
 const CSS_NAME_FOR_PROP = {
   'backgroundColor': 'background-color',
   'borderBottomColor': 'border-bottom-color',
@@ -43,6 +123,7 @@ const CSS_NAME_FOR_PROP = {
   'caretColor': 'caret-color',
   'color': 'color',
   'columnRuleColor': 'column-rule-color',
+  'fill': 'fill',
   'floodColor': 'flood-color',
   'lightingColor': 'lighting-color',
   'outlineColor': 'outline-color',
@@ -63,7 +144,7 @@ const HEX_FOR_NAMED_COLOR = {
   'cadetblue':'#5f9ea0','chartreuse':'#7fff00','chocolate':'#d2691e','coral':'#ff7f50','cornflowerblue':'#6495ed','cornsilk':'#fff8dc','crimson':'#dc143c','cyan':'#00ffff',
   'darkblue':'#00008b','darkcyan':'#008b8b','darkgoldenrod':'#b8860b','darkgray':'#a9a9a9','darkgreen':'#006400','darkkhaki':'#bdb76b','darkmagenta':'#8b008b','darkolivegreen':'#556b2f','darkorange':'#ff8c00','darkorchid':'#9932cc','darkred':'#8b0000','darksalmon':'#e9967a','darkseagreen':'#8fbc8f','darkslateblue':'#483d8b','darkslategray':'#2f4f4f','darkturquoise':'#00ced1','darkviolet':'#9400d3','deeppink':'#ff1493','deepskyblue':'#00bfff','dimgray':'#696969','dodgerblue':'#1e90ff',
   'firebrick':'#b22222','floralwhite':'#fffaf0','forestgreen':'#228b22','fuchsia':'#ff00ff',
-  'gainsboro':'#dcdcdc','ghostwhite':'#f8f8ff','gold':'#ffd700','goldenrod':'#daa520','gray':'#808080','green':'#008000','greenyellow':'#adff2f',
+  'gainsboro':'#dcdcdc','ghostwhite':'#f8f8ff','gold':'#ffd700','goldenrod':'#daa520','gray':'#808080','green':'#008000','greenyellow':'#adff2f','grey':'#808080',
   'honeydew':'#f0fff0','hotpink':'#ff69b4',
   'indianred ':'#cd5c5c','indigo':'#4b0082','ivory':'#fffff0',
   'khaki':'#f0e68c',
@@ -79,279 +160,443 @@ const HEX_FOR_NAMED_COLOR = {
   'wheat':'#f5deb3','white':'#ffffff','whitesmoke':'#f5f5f5',
   'yellow':'#ffff00','yellowgreen':'#9acd32'
 };
-const STATES = {
-  NEW:      0,
-  ENABLED:  1,
-  DISABLED: 2
-};
-const VALID_MEDIA_TYPES = ['', 'all', 'screen'];
-const VAR_DIV = function() {
-  const div = document.createElement('div');
-  div.id = '_nightlight_cssvar_tester';
-  return div;
-}();
-const VAR_COLORS = {};
-let STATE = STATES.NEW;
-let STYLES = [];
+const DARK_STYLE_CACHE = {};
+const LIGHT_STYLE_CACHE = {};
+const SVG_FILL_CACHE = {};
+const MUTATION_OBSERVER = new MutationObserver(onMutation);
+const BUNDLE_LIST = new BundleList([], false);
+let WARMED_UP = false;
 
 safari.self.addEventListener('message', event => {
   switch(event.name) {
   case 'START':
-    switch(STATE) {
-    case STATES.NEW:
-      STYLES = falseStart();
-      STATE = STATES.ENABLED;
-      break;
-    case STATES.ENABLED:
-      // Do nothing
-      break;
-    case STATES.DISABLED:
-      enableStyles(STYLES);
-      STATE = STATES.ENABLED;
-      break;
-    }
+    warmup();
+    BUNDLE_LIST.setEnabled(true);
     break;
-
   case 'STOP':
-    if(STATE == STATES.ENABLED) {
-      disableStyles(STYLES);
-      STATE = STATES.DISABLED;
-    }
+    BUNDLE_LIST.setEnabled(false);
     break;
-
   case 'TOGGLE':
-    switch(STATE) {
-    case STATES.NEW:
-      STYLES = start();
-      STATE = STATES.ENABLED;
-      break;
-    case STATES.ENABLED:
-      disableStyles(STYLES);
-      STATE = STATES.DISABLED;
-      break;
-    case STATES.DISABLED:
-      enableStyles(STYLES);
-      STATE = STATES.ENABLED;
-      break;
-    }
+    warmup();
+    BUNDLE_LIST.setEnabled(!BUNDLE_LIST.enabled);
     break;
   }
 });
 
-window.onload = function(event) {
-  document.body.appendChild(VAR_DIV);
-  // TODO: MutationObserver filtering by style tag
-  if(STATE == STATES.ENABLED) {
-    removeStyles(STYLES);
-    STYLES = start();
-  }
-};
-
 safari.extension.dispatchMessage('READY');
 
+function warmup() {
+  if(!WARMED_UP) {
+    WARMED_UP = true;
+    if(document.readyState == 'loading') {
+      document.addEventListener('DOMContentLoaded', onDomContentLoaded);
+      window.addEventListener('load', onLoad);
+    } else if(document.readyState == 'interactive') {
+      window.addEventListener('load', onLoad);
+      onDomContentLoaded();
+    } else if(document.readyState == 'complete') {
+      onDomContentLoaded();
+      onLoad();
+    }
+  }
+}
+
+function onDomContentLoaded() {
+  BUNDLE_LIST.hotload(quickStart());
+}
+
+function onLoad() {
+  makeImageShader();
+  BUNDLE_LIST.hotload(start());
+  MUTATION_OBSERVER.observe(document, { childList: true, subtree: true });
+}
+
+// TODO: Handle removed nodes and changes to attributes
+function onMutation(mutations) {
+  function makeBundlesForMutation(arr, m) {
+    function makeBundle(arr, node) {
+      if(node.nodeType != Node.ELEMENT_NODE) {
+        return arr;
+      }
+      if(node.sheet) {
+        arr = makeStyleSheetBundleFromSheet(arr, node.sheet);
+      }
+      if(node.style) {
+        arr = makeStyleAttributeBundle(arr, node);
+      }
+      if(node.getAttribute('fill')) {
+        arr = makeSvgFillBundle(arr, node);
+      }
+      if(node.getAttribute('flood-color')) {
+
+      }
+      if(node.getAttribute('lighting-color')) {
+
+      }
+      if(node.getAttribute('stroke')) {
+
+      }
+      if(node.getAttribute('stop-color')) {
+
+      }
+      if(node.tagName == 'IMG') {
+        arr = makeImageBundle(arr, node);
+      }
+      return arr;
+    }
+
+    arr.concat([].slice.call(m.addedNodes).reduce(makeBundle, []));
+    return arr;
+  }
+  
+  const bundles = mutations.reduce(makeBundlesForMutation, []);
+  if(bundles.length == 0) {
+    return;
+  }
+  console.log('bundles from mutations', bundles); //*
+  BUNDLE_LIST.hotload(bundles);
+}
+
 // Darken before document finishes loading
-function falseStart() {
-  return makeAndAddStyles([BASIC, HACKS_GENERAL, HACKS_SITE_SPECIFIC]);
+function quickStart() {
+  return [BASIC, HACKS_GENERAL, HACKS_SITE_SPECIFIC]
+    .reduce(makeStyleSheetBundleFromStr, []);
 }
 
 function start() {
-  const processedHrefStyles = getHrefStyleSheets()
-    .map(makeProcessedStyle).filter(str => str != '');
-  const processedInlineStyles = getInlineStyleSheets()
-    .map(makeProcessedStyle).filter(str => str != '');
-//  console.log('href', processedHrefStyles); //*
-//  console.log('inline', processedInlineStyles); //*
-  return makeAndAddStyles([BASIC, HACKS_GENERAL, HACKS_SITE_SPECIFIC]
-    .concat(processedHrefStyles)
-    .concat(processedInlineStyles));
+  const styleSheets = [].slice.call(document.styleSheets)
+    .reduce(makeStyleSheetBundleFromSheet, []);
+  const styleAttributes = [].slice.call(document.querySelectorAll('[style]'))
+    .reduce(makeStyleAttributeBundle, []);
+  const svgFills = [].slice.call(document.querySelectorAll('[fill]'))
+    .reduce(makeSvgFillBundle, []);
+  const images = [].slice.call(document.getElementsByTagName('img'))
+    .reduce(makeImageBundle, []);
+  return styleSheets.concat(styleAttributes).concat(svgFills).concat(images);
 }
 
-function getHrefStyleSheets() {
-  return [].slice.call(document.styleSheets)
-    .filter(s => s.href && VALID_MEDIA_TYPES.includes(s.media.mediaText));
+// --- Bundle helpers ---
+
+// Returns `[StyleSheetBundle]`
+function makeStyleSheetBundleFromStr(arr, str) {
+  if(str && str != '') {
+    arr.push(new StyleSheetBundle(str));
+  }
+  return arr;
 }
 
-function getInlineStyleSheets() {
-  return [].slice.call(document.styleSheets)
-    .filter(s => !s.href && VALID_MEDIA_TYPES.includes(s.media.mediaText));
+// Returns `[StyleSheetBundle]`
+function makeStyleSheetBundleFromSheet(arr, node) {
+  if(node.ownerNode.id.substring(0, 11) != '_nightlight') {
+    return makeStyleSheetBundleFromStr(arr, makeStyle(node));
+  }
+  return arr;
 }
+
+// Returna `[StyleAttributeBundle]`
+function makeStyleAttributeBundle(arr, node) {
+  const decl = makeAttributeDeclStr(node.style);
+  if(decl) {
+    arr.push(new StyleAttributeBundle(node, node.style.cssText, decl));
+  }
+  return arr;
+}
+
+// Returns `[SvgFillBundle]`
+function makeSvgFillBundle(arr, node) {
+  const fill = node.getAttribute('fill');
+  const newFill = makeSvgFillColor(fill);
+  if(newFill) {
+    arr.push(new SvgFillBundle(node, fill, newFill));
+  }
+  return arr;
+}
+
+// Returns `[ImageBundle]`
+function makeImageBundle(arr, node) {
+  // FIXME
+  if(shouldProcessImage(node)) {
+
+  }
+  return arr;
+}
+
+// ---
+
+// --- Style sheet/attribute and SVG helpers ---
+
+function makeSvgFillColor(str) {
+  if(str.substring(0, 4) == 'url(') {
+    return null;
+  } 
+  return makeColor(str, SVG_FILL_CACHE, function(r, g, b, a) {
+    if(saturation(r, g, b) < 0.15 && luminance(r, g, b) <= 100) {
+      // Invert dark grays
+      return inverted(r, g, b, a);
+    }
+    return same(r, g, b, a);
+  });
+}
+
+function makeSvgStrokeColor(str) {
+  if(str != '') {
+    console.log('FIXME strokeColor', str); //*
+  }
+  return null;
+}
+
+function makeSvgFloodColor(str) {
+  if(str != '') {
+    console.log('FIXME floodColor', str); //*
+  }
+  return null;
+}
+
+function makeSvgLightingColor(str) {
+  if(str != '') {
+    console.log('FIXME lightingColor', str); //*
+  }
+  return null;
+}
+
+function makeSvgStopColor(str) {
+  if(str != '') {
+    console.log('FIXME stopColor', str); //*
+  }
+  return null;
+}
+
+// ---
+
+// --- Style sheet/attribute helpers ---
+
+function makeDarkStyleColor(str) {
+  return makeColor(str, DARK_STYLE_CACHE, function(r, g, b, a) {
+    if(saturation(r, g, b) > 0.15) {
+      // Darken colors
+      return shaded(-10, r, g, b, a);
+    } else if(luminance(r, g, b) > 100) {
+      // Invert bright grays
+      return inverted(r, g, b, a);
+    } else {
+      // Darken dark grays
+      return shaded(-50, r, g, b, a);
+    }
+  });
+}
+
+function makeLightStyleColor(str) {
+  return makeColor(str, LIGHT_STYLE_CACHE, function(r, g, b, a) {
+    if(luminance(r, g, b) <= 100) {
+      if(saturation(r, g, b) > 0.15) {
+        // Lighten dark colors
+        return shaded(50, r, g, b, a);
+      } else {
+        // Invert dark grays
+        return inverted(r, g, b, a);
+      }
+    }
+    return same(r, g, b, a);
+  });
+}
+
+// ---
+
+// --- Style sheet helpers ---
 
 // styleSheet - `CSSStyleSheet`
-// Returns string
-function makeProcessedStyle(styleSheet) {
-  if(!styleSheet.cssRules) {
-    return '';
+// Returns string or null
+function makeStyle(styleSheet) {
+  if((!styleSheet.media || // Imported style sheets have null media
+    VALID_MEDIA_TYPES.includes(styleSheet.media.mediaText)) && 
+    styleSheet.cssRules) // Workaround for null cssRules bug
+  {
+    return [].slice.call(styleSheet.cssRules).reduce(makeRuleStr, '');
+  } else {
+    return null;
   }
-  return [].slice.call(styleSheet.cssRules).map(makeProcessedRule).join('');
 }
 
 // rule - `CSSRule`
 // Returns string
-function makeProcessedRule(rule) {
+function makeRuleStr(str, rule) {
   if(rule.type == 1) {
-    const decl = makeProcessedDecl(rule.style);
-    if(decl == '') {
-      return '';
-    } else {
-      return rule.selectorText+'{'+decl+'}';
+    const decl = makeSheetDeclStr(rule.style);
+    if(decl != '') {
+      return str += rule.selectorText+'{'+decl+'}';
     }
   } else if (rule.type == 3) {
-    return makeProcessedStyle(rule.styleSheet);
-  } else {
-    return '';
+    const style = makeStyle(rule.styleSheet);
+    if(style) {
+      return str += style;
+    }
   }
+  return str;
 }
 
 // decl - `CSSStyleDeclaration`
 // Returns string
-function makeProcessedDecl(decl) {
-  function a(prop, f_color) {
-    return { prop: prop, val: decl[prop], f_color: f_color };
+function makeSheetDeclStr(decl) {
+  function makeCtx(prop, f) {
+    return { prop: prop, value: decl[prop], f: f };
   }
 
-  return COLOR_DARKEN_PROPS.map(prop => a(prop, makeDarkenedColor))
-    .concat(COLOR_LIGHTEN_PROPS.map(prop => a(prop, makeLightenedColor)))
-    .reduce((arr, a) => {
-      if(a.val != '') {
-        const newVal = a.f_color(a.val);
-        if(newVal) {
-          arr.push(CSS_NAME_FOR_PROP[a.prop]+':'+newVal+' !important;');
-        }
+  function makeStr(str, ctx) {
+    if(ctx.value != '') {
+      const newValue = ctx.f(ctx.value);
+      if(newValue) {
+        str += CSS_NAME_FOR_PROP[ctx.prop]+':'+newValue+' !important;';
       }
-      return arr;
-    }, [])
-    .join('');
+    }
+    return str;
+  }
+
+  return DARK_PROPS.map(prop => makeCtx(prop, makeDarkStyleColor))
+    .concat(LIGHT_PROPS.map(prop => makeCtx(prop, makeLightStyleColor)))
+    .concat([makeCtx('fill', makeSvgFillColor),
+      makeCtx('strokeColor', makeSvgStrokeColor),
+      makeCtx('lightingColor', makeSvgLightingColor),
+      makeCtx('floodColor', makeSvgFloodColor),
+      makeCtx('stopColor', makeSvgStopColor)])
+    .reduce(makeStr, '');
 }
 
-function makeDarkenedColor(str) {
-  return makeProcessedColor(str, makeDarkRGB, makeDarkRGBA, makeDarkHex,
-    makeDarkVar);
+// ---
+
+// --- Style attribute helpers ---
+
+// decl - `CSSStyleDeclaration`
+// Returns string
+function makeAttributeDeclStr(decl) {
+  function makeCtx(prop, f) {
+    return { prop: prop, f: f };
+  }
+
+  function modifyDecl(ctx, decl) {
+    const value = decl[ctx.prop];
+    if(value == '') {
+      return;
+    }
+    decl[ctx.prop] = ctx.f(value);
+  }
+
+  const div = document.createElement('div');
+  div.style = decl.cssText;
+  const newDecl = div.style;
+  DARK_PROPS.map(prop => makeCtx(prop, makeDarkStyleColor))
+    .concat(LIGHT_PROPS.map(prop => makeCtx(prop, makeLightStyleColor)))
+    .concat([makeCtx('fill', makeSvgFillColor),
+      makeCtx('strokeColor', makeSvgStrokeColor),
+      makeCtx('lightingColor', makeSvgLightingColor),
+      makeCtx('floodColor', makeSvgFloodColor),
+      makeCtx('stopColor', makeSvgStopColor)])
+    .forEach(ctx => modifyDecl(ctx, newDecl));
+  return newDecl.cssText;
 }
 
-function makeLightenedColor(str) {
-  return makeProcessedColor(str, makeLightRGB, makeLightRGBA, makeLightHex,
-    makeLightVar);
+// ---
+
+// --- Image helpers ---
+
+function makeImageShader() {
+
 }
 
-// `CSSStyleDeclaration` only returns color as rgb, rgba, or name
+function shouldProcessImage(image) {
+
+}
+
 // Returns string or null
-function makeProcessedColor(str, f_rgb, f_rgba, f_hex, f_var) {
-  if(str.substring(0, 4) == 'rgb(') {
-    return f_rgb(str);
-  } else if(str.substring(0, 4) == 'rgba') {
-    return f_rgba(str);
-  } else if(HEX_FOR_NAMED_COLOR[str]) {
-    return f_hex(HEX_FOR_NAMED_COLOR[str]);
-  } else if(str.substring(0, 4) == 'var(') {
-    return f_var(str);
-  } else if(['transparent', 'inherit', 'currentcolor'].includes(str)) {
-    return null;
-  } else if(str == 'initial') {
-    return null; // FIXME
+function makeImage(image) {
+  if(shouldProcessImage(image)) {
+
   } else {
-    console.error('Invalid color '+str);
     return null;
   }
 }
 
-function makeDarkRGB(str) {
-  return makeProcessedRGB(str, _makeDarkRGBA);
+// ---
+
+// --- Color helpers ---
+
+// Returns string or null
+function makeColor(str, cache, f_rgba) {
+  const cached = cache[str];
+  if(cached !== undefined) {
+    // console.log('hit', str, cached);
+    return cached;
+  } else {
+    const color = function() {
+      if(str.substring(0, 4) == 'rgb(') {
+        return makeColorFromRgb(str, f_rgba);
+      } else if(str.substring(0, 4) == 'rgba') {
+        return makeColorFromRgba(str, f_rgba);
+      } else if(str.substring(0, 1) == '#') {
+        return makeColorFromHex(str, f_rgba);
+      } else if(HEX_FOR_NAMED_COLOR[str]) {
+        return makeColorFromHex(HEX_FOR_NAMED_COLOR[str], f_rgba);
+      } else if(str.substring(0, 4) == 'var(') {
+        return makeColorFromVar(str, f_rgba);
+      } else if(['none', 'transparent', 'initial', 'inherit', 'currentcolor']
+        .includes(str))
+      {
+        return null;
+      } else {
+        console.error('Invalid color '+str);
+        return null;
+      }
+    }();
+    cache[str] = color;
+    // console.log('miss', str, color);
+    return color;
+  }
 }
 
-function makeLightRGB(str) {
-  return makeProcessedRGB(str, _makeLightRGBA);
-}
-
-function makeDarkRGBA(str) {
-  return makeProcessedRGBA(str, _makeDarkRGBA);
-}
-
-function makeLightRGBA(str) {
-  return makeProcessedRGBA(str, _makeLightRGBA);
-}
-
-function makeDarkHex(str) {
-  return makeProcessedHex(str, _makeDarkRGBA);
-}
-
-function makeLightHex(str) {
-  return makeProcessedHex(str, _makeLightRGBA);
-}
-
-function makeDarkVar(str) {
-  return makeProcessedVar(str, _makeDarkRGBA);
-}
-
-function makeLightVar(str) {
-  return makeProcessedVar(str, _makeLightRGBA);
-}
-
-function makeProcessedRGB(str, f_rgba) {
+function makeColorFromRgb(str, f_rgba) {
   const tokens = str.slice(4, -1).split(', ');
-  const p = f_rgba(parseInt(tokens[0]), parseInt(tokens[1]),
+  const c = f_rgba(parseInt(tokens[0]), parseInt(tokens[1]),
     parseInt(tokens[2]), 1);
-  return 'rgb('+p.r+','+p.g+','+p.b+')';
+  return 'rgb('+c.r+','+c.g+','+c.b+')';
 }
 
-function makeProcessedRGBA(str, f_rgba) {
+function makeColorFromRgba(str, f_rgba) {
   const tokens = str.slice(5, -1).split(', ');
-  const p = f_rgba(parseInt(tokens[0]), parseInt(tokens[1]),
+  const c = f_rgba(parseInt(tokens[0]), parseInt(tokens[1]),
     parseInt(tokens[2]), parseFloat(tokens[3]));
-  return 'rgba('+p.r+','+p.g+','+p.b+','+p.a+')';
+  return 'rgba('+c.r+','+c.g+','+c.b+','+c.a+')';
 }
 
-// Assume hex string length is 6
-function makeProcessedHex(str, f_rgba) {
-  const p = f_rgba(parseInt(str.substring(1, 3), 16), 
-    parseInt(str.substring(3, 5), 16), parseInt(str.substring(5), 16), 1);
-  return 'rgb('+p.r+','+p.g+','+p.b+')';
+// https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
+function makeColorFromHex(str, f_rgba) {
+  const c = function() {
+    if(str.length == 4) {
+      return f_rgba('0x'+str[1]+str[1]|0, '0x'+str[2]+str[2]|0,
+        '0x'+str[3]+str[3]|0, 1);
+    } else if(str.length == 7) {
+      return f_rgba('0x'+str[1]+str[2]|0, '0x'+str[3]+str[4]|0,
+        '0x'+str[5]+str[6]|0);
+    } else {
+      return null;
+    }
+  }();
+  return 'rgb('+c.r+','+c.g+','+c.b+')';
 }
 
 // https://stackoverflow.com/questions/1573053/javascript-function-to-convert-color-names-to-hex-codes
-function makeProcessedVar(str, f_rgba) {
-  if(VAR_COLORS[str]) {
-//    console.log('hit', str, VAR_COLORS[str]); //*
-    return VAR_COLORS[str];
-  } else {
-    VAR_DIV.style.color = str;
-    const computedColor = window.getComputedStyle(VAR_DIV).color;
-    const p = function() {
-      if(computedColor.substring(0, 4) == 'rgb(') {
-        return makeProcessedRGB(computedColor, f_rgba);
-      } else {
-        return makeProcessedRGBA(computedColor, f_rgba);
-      }
-    }();
-    VAR_COLORS[str] = p;
-//    console.log('miss', str, computedColor, p); //*
-    return p;
-  }
-}
-
-function _makeDarkRGBA(r, g, b, a) {
-  if(saturation(r, g, b) > 0.15) {
-    return shaded(-10, r, g, b, a);
-  } else if(luminance(r, g, b) > 100) {
-    return inverted(r, g, b, a);
-  } else {
-    return shaded(-50, r, g, b, a);
-  }
-}
-
-function _makeLightRGBA(r, g, b, a) {
-  if(saturation(r, g, b) > 0.15) {
-    if(luminance(r, g, b) <= 100) {
-      return shaded(50, r, g, b, a);
+function makeColorFromVar(str, f_rgba) {
+  const div = document.createElement('div');
+  document.head.appendChild(div);
+  div.style.color = str;
+  const _str = window.getComputedStyle(div).color;
+  document.head.removeChild(div);
+  const color = function() {
+    if(_str.substring(0, 4) == 'rgb(') {
+      return makeColorFromRgb(_str, f_rgba);
     } else {
-      return { r: r, g: g, b: b, a: a };
+      return makeColorFromRgba(_str, f_rgba);
     }
-  } else {
-    if(luminance(r, g, b) <= 100) {
-      return inverted(r, g, b, a);
-    } else {
-      return { r: r, g: g, b: b, a: a };
-    }
-  }
+  }();
+  return color;
 }
 
 function saturation(r, g, b) {
@@ -386,25 +631,8 @@ function inverted(r, g, b, a) {
   return { r: 255-r, g: 255-g, b: 255-b, a: a };
 }
 
-function makeAndAddStyles(strings) {
-  const styles = strings.filter(s => s).map((s, i) => {
-    const styleNode = document.createElement('style');
-    styleNode.id = '_nightlight_'+i;
-    styleNode.appendChild(document.createTextNode(s));
-    return styleNode;
-  });
-  styles.forEach(node => document.head.appendChild(node));
-  return styles;
+function same(r, g, b, a) {
+  return { r: r, g: g, b: b, a: a };
 }
 
-function enableStyles(styles) {
-  styles.forEach(s => s.disabled = false);
-}
-
-function disableStyles(styles) {
-  styles.forEach(s => s.disabled = true);
-}
-
-function removeStyles(styles) {
-  styles.forEach(s => s.parentNode.removeChild(s));
-}
+// ---

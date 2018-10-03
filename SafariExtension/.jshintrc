@@ -1,3 +1,12 @@
 {
-    "esversion": 6
+    "esversion": 6,
+    "globals": {
+        "console": false,
+        "document": false,
+        "Node": false,
+        "MutationObserver": false,
+        "safari": false,
+        "window": false
+    },
+    "undef": true
 }
