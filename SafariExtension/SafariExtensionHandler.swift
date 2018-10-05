@@ -20,6 +20,8 @@ final class SafariExtensionHandler: SFSafariExtensionHandler {
         switch messageName {
         case "READY":
             MessageHandler.stateReady(page: page)
+        case "wantsResource":
+            MessageHandler.wantsResource(page: page, href: userInfo!["href"]! as! String)
         default:
             fatalError()
         }

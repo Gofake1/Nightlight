@@ -313,6 +313,9 @@
 							com.apple.HardenedRuntime = {
 								enabled = 0;
 							};
+							com.apple.Sandbox = {
+								enabled = 1;
+							};
 						};
 					};
 					63A8279020FC92F100671659 = {
@@ -323,6 +326,9 @@
 							};
 							com.apple.HardenedRuntime = {
 								enabled = 0;
+							};
+							com.apple.Sandbox = {
+								enabled = 1;
 							};
 						};
 					};

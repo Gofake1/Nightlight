@@ -3,7 +3,7 @@ Browse the internet more comfortably at night
 
 ![Nightlight screenshot](https://gofake1.net/images/nightlight_hero.jpg)
 
-Nightlight is a Safari app extension that darkens websites while attempting to preserve their original designs. Currently, there is a bug in Safari (rdar://42491788) that requires a workaround that just makes everything black. Please consider duplicating the radar to increase the chance the bug gets fixed.
+Nightlight is a Safari app extension that darkens websites while attempting to preserve their original designs.
 
 ### Acknowledgements
 

@@ -14,6 +14,10 @@ final class MessageHandler {
     static func stateReady(page: SFSafariPage) {
         impl.stateReady(page: page)
     }
+    
+    static func wantsResource(page: SFSafariPage, href: String) {
+        impl.wantsResource(page: page, href: href)
+    }
 }
 
 final class IsOnObserver: NSObject {
@@ -42,6 +46,33 @@ final class IsOnObserver: NSObject {
 
 protocol MessageHandlerImplType {
     func stateReady(page: SFSafariPage)
+    func wantsResource(page: SFSafariPage, href: String)
+}
+
+extension MessageHandlerImplType {
+    func wantsResource(page: SFSafariPage, href: String) {
+        NSLog("wantsResource \(href)") //*
+        guard let url = URL(string: href) else { return }
+        let request = URLRequest(url: url)
+        if let data = URLCache.shared.cachedResponse(for: request)?.data {
+            NSLog("cache hit") //*
+            let resource = String(data: data, encoding: .utf8)!
+            page.dispatchMessageToScript(withName: "resource", userInfo: ["resource": resource])
+        } else {
+            NSLog("cache miss") //*
+            URLSession.shared.dataTask(with: request) { (data, res, error) in
+                if let error = error {
+                    NSLog("\(error)") //*
+                } else if let data = data, let res = res {
+                    let resource = String(data: data, encoding: .utf8)!
+                    page.dispatchMessageToScript(withName: "resource", userInfo: ["resource": resource])
+                    let cachedRes = CachedURLResponse(response: res, data: data)
+                    URLCache.shared.storeCachedResponse(cachedRes, for: request)
+                }
+            } .resume()
+        }
+        
+    }
 }
 
 final class DisabledMessageHandlerImpl {

@@ -19,27 +19,49 @@ class BundleList {
   }
 }
 
-class StyleSheetBundle {
+class StyleSheetBuiltinBundle {
   constructor(str) {
-    this.styleSheet = document.createElement('style');
-    this.styleSheet.appendChild(document.createTextNode(str));
-    this.styleSheet.disabled = true;
-    this.styleSheet.id = '_nightlight_'+StyleSheetBundle.nextId();
-    document.head.appendChild(this.styleSheet);
+    this.node = document.createElement('style');
+    this.node.appendChild(document.createTextNode(str));
+    this.node.disabled = true;
+    this.node.id = '_nightlight_builtin_'+StyleSheetBuiltinBundle.nextId();
+    document.head.appendChild(this.node);
   }
   enable() {
-    this.styleSheet.disabled = false;
+    this.node.disabled = false;
   }
   disable() {
-    this.styleSheet.disabled = true;
+    this.node.disabled = true;
   }
   static nextId() {
-    const id = StyleSheetBundle.id;
-    StyleSheetBundle.id++;
+    const id = StyleSheetBuiltinBundle.id;
+    StyleSheetBuiltinBundle.id++;
     return id;
   }
 }
-StyleSheetBundle.id = 0;
+StyleSheetBuiltinBundle.id = 0;
+
+class StyleSheetOverrideBundle {
+  constructor(str) {
+    this.node = document.createElement('style');
+    this.node.appendChild(document.createTextNode(str));
+    this.node.disabled = true;
+    this.node.id = '_nightlight_override_'+StyleSheetOverrideBundle.nextId();
+    document.head.appendChild(this.node);
+  }
+  enable() {
+    this.node.disabled = false;
+  }
+  disable() {
+    this.node.disabled = true;
+  }
+  static nextId() {
+    const id = StyleSheetOverrideBundle.id;
+    StyleSheetOverrideBundle.id++;
+    return id;
+  }
+}
+StyleSheetOverrideBundle.id = 0;
 
 class StyleAttributeBundle {
   constructor(node, originalStyle, newStyle) {
@@ -83,12 +105,7 @@ class ImageBundle {
   }
 }
 
-const BASIC = 'html{background-color:rgb(8,8,8);color:#d2d2d2;}a{color:#56a9ff !important;}canvas{background-color:rgba(8,8,8,0.5) !important;}img{filter:brightness(75%);}input,textarea{background-color:rgb(8,8,8) !important;color:#d2d2d2 !important;}input[type="search"]{-webkit-appearance:none;}';
-// Workaround: Bug in Safari that breaks current approach in certain cases
-// (rdar://42491788). This is a clumsy fallback that's bad for pages that 
-// Safari isn't broken for, but better than nothing for pages that are.
-const HACKS_GENERAL = 'body,h1,h2,h3,h4{background-color:rgb(8,8,8) !important;color:#d2d2d2 !important;}blockquote,div,header,main,nav,pre,section,span,table,td,tr{background-color:rgba(8,8,8,0.5) !important;color:#d2d2d2 !important;}code{background-color: none !important;}p{color:#d2d2d2 !important;}ul{background-color:rgb(8,8,8) !important;}';
-const HACKS_SITE_SPECIFIC = ''; // TODO: Medium blogs
+const BASIC = 'html,input,textarea{background-color:rgb(8,8,8);color:#d2d2d2;}a{color:#56a9ff;}input[type="search"]{-webkit-appearance:none;}';
 const DARK_PROPS = [
 'backgroundColor',
 'webkitTextFillColor'
@@ -180,6 +197,9 @@ safari.self.addEventListener('message', event => {
     warmup();
     BUNDLE_LIST.setEnabled(!BUNDLE_LIST.enabled);
     break;
+  case 'resource':
+    addStyleSheetOverrideBundle(event.message.resource);
+    break;
   }
 });
 
@@ -215,11 +235,13 @@ function onLoad() {
 function onMutation(mutations) {
   function makeBundlesForMutation(arr, m) {
     function makeBundle(arr, node) {
-      if(node.nodeType != Node.ELEMENT_NODE) {
+      if(node.nodeType != Node.ELEMENT_NODE ||
+        node.id.substring(0, 11) == '_nightlight')
+      {
         return arr;
       }
       if(node.sheet) {
-        arr = makeStyleSheetBundleFromSheet(arr, node.sheet);
+        arr = makeStyleSheetOverrideBundle(arr, node.sheet);
       }
       if(node.style) {
         arr = makeStyleAttributeBundle(arr, node);
@@ -228,16 +250,16 @@ function onMutation(mutations) {
         arr = makeSvgFillBundle(arr, node);
       }
       if(node.getAttribute('flood-color')) {
-
+        arr = makeSvgFloodColorBundle(arr, node);
       }
       if(node.getAttribute('lighting-color')) {
-
+        arr = makeSvgLightingColorBundle(arr, node);
       }
       if(node.getAttribute('stroke')) {
-
+        arr = makeSvgStrokeBundle(arr, node);
       }
       if(node.getAttribute('stop-color')) {
-
+        arr = makeSvgStopColorBundle(arr, node);
       }
       if(node.tagName == 'IMG') {
         arr = makeImageBundle(arr, node);
@@ -259,17 +281,25 @@ function onMutation(mutations) {
 
 // Darken before document finishes loading
 function quickStart() {
-  return [BASIC, HACKS_GENERAL, HACKS_SITE_SPECIFIC]
-    .reduce(makeStyleSheetBundleFromStr, []);
+  return [BASIC].reduce(makeStyleSheetBuiltinBundle, []);
 }
 
 function start() {
   const styleSheets = [].slice.call(document.styleSheets)
-    .reduce(makeStyleSheetBundleFromSheet, []);
+    .reduce(makeStyleSheetOverrideBundle, []);
   const styleAttributes = [].slice.call(document.querySelectorAll('[style]'))
     .reduce(makeStyleAttributeBundle, []);
   const svgFills = [].slice.call(document.querySelectorAll('[fill]'))
     .reduce(makeSvgFillBundle, []);
+  const svgFloods = [].slice.call(document.querySelectorAll('[flood-color]'))
+    .reduce(makeSvgFloodColorBundle, []);
+  const svgLights = [].slice
+    .call(document.querySelectorAll('[lighting-color]'))
+    .reduce(makeSvgLightingColorBundle, []);
+  const svgStrokes = [].slice.call(document.querySelectorAll('[stroke]'))
+    .reduce(makeSvgStrokeBundle, []);
+  const svgStops = [].slice.call(document.querySelectorAll('[stop-color]'))
+    .reduce(makeSvgStopColorBundle, []);
   const images = [].slice.call(document.getElementsByTagName('img'))
     .reduce(makeImageBundle, []);
   return styleSheets.concat(styleAttributes).concat(svgFills).concat(images);
@@ -277,23 +307,42 @@ function start() {
 
 // --- Bundle helpers ---
 
-// Returns `[StyleSheetBundle]`
-function makeStyleSheetBundleFromStr(arr, str) {
-  if(str && str != '') {
-    arr.push(new StyleSheetBundle(str));
+function makeStyleSheetBuiltinBundle(arr, str) {
+  arr.push(new StyleSheetBuiltinBundle(str));
+  return arr;
+}
+
+// sheet - `CSSStyleSheet`
+function makeStyleSheetOverrideBundle(arr, sheet) {
+  if(sheet.cssRules) {
+    return makeStyleSheetOverrideBundleFromSheet(arr, sheet);
+  } else {
+    // FIXME: Redundant network requests due to iframes
+    safari.extension.dispatchMessage('wantsResource', { href: sheet.href });
+    return arr;
+  }
+}
+
+function makeStyleSheetOverrideBundleFromSheet(arr, sheet) {
+  const str = makeStyle(sheet);
+  if(str != '') {
+    arr.push(new StyleSheetOverrideBundle(str));
   }
   return arr;
 }
 
-// Returns `[StyleSheetBundle]`
-function makeStyleSheetBundleFromSheet(arr, node) {
-  if(node.ownerNode.id.substring(0, 11) != '_nightlight') {
-    return makeStyleSheetBundleFromStr(arr, makeStyle(node));
+function addStyleSheetOverrideBundle(str) {
+  const style = document.createElement('style');
+  style.appendChild(document.createTextNode(str));
+  style.disabled = true;
+  document.head.appendChild(style);
+  const newStr = makeStyle(style.sheet);
+  document.head.removeChild(style);
+  if(newStr != '') {
+    BUNDLE_LIST.hotload([new StyleSheetOverrideBundle(newStr)]);
   }
-  return arr;
 }
 
-// Returna `[StyleAttributeBundle]`
 function makeStyleAttributeBundle(arr, node) {
   const decl = makeAttributeDeclStr(node.style);
   if(decl) {
@@ -302,7 +351,6 @@ function makeStyleAttributeBundle(arr, node) {
   return arr;
 }
 
-// Returns `[SvgFillBundle]`
 function makeSvgFillBundle(arr, node) {
   const fill = node.getAttribute('fill');
   const newFill = makeSvgFillColor(fill);
@@ -312,7 +360,42 @@ function makeSvgFillBundle(arr, node) {
   return arr;
 }
 
-// Returns `[ImageBundle]`
+function makeSvgFloodColorBundle(arr, node) {
+  const flood = node.getAttribute('flood-color');
+  const newFlood = makeSvgFloodColor(flood);
+  if(newFlood) {
+
+  }
+  return arr;
+}
+
+function makeSvgLightingColorBundle(arr, node) {
+  const lighting = node.getAttribute('lighting-color');
+  const newLighting = makeSvgLightingColor(lighting);
+  if(newLighting) {
+
+  }
+  return arr;
+}
+
+function makeSvgStrokeBundle(arr, node) {
+  const stroke = node.getAttribute('stroke');
+  const newStroke = makeSvgStrokeColor(stroke);
+  if(newStroke) {
+
+  }
+  return arr;
+}
+
+function makeSvgStopColorBundle(arr, node) {
+  const stop = node.getAttribute('stop-color');
+  const newStop = makeSvgStopColor(stop);
+  if(newStop) {
+
+  }
+  return arr;
+}
+
 function makeImageBundle(arr, node) {
   // FIXME
   if(shouldProcessImage(node)) {
@@ -405,15 +488,14 @@ function makeLightStyleColor(str) {
 // --- Style sheet helpers ---
 
 // styleSheet - `CSSStyleSheet`
-// Returns string or null
+// Returns string
 function makeStyle(styleSheet) {
-  if((!styleSheet.media || // Imported style sheets have null media
-    VALID_MEDIA_TYPES.includes(styleSheet.media.mediaText)) && 
-    styleSheet.cssRules) // Workaround for null cssRules bug
+  if(!styleSheet.media || // Imported style sheets have null media
+    VALID_MEDIA_TYPES.includes(styleSheet.media.mediaText))
   {
     return [].slice.call(styleSheet.cssRules).reduce(makeRuleStr, '');
   } else {
-    return null;
+    return '';
   }
 }
 
@@ -426,10 +508,7 @@ function makeRuleStr(str, rule) {
       return str += rule.selectorText+'{'+decl+'}';
     }
   } else if (rule.type == 3) {
-    const style = makeStyle(rule.styleSheet);
-    if(style) {
-      return str += style;
-    }
+    str += makeStyle(rule.styleSheet);
   }
   return str;
 }
@@ -438,14 +517,20 @@ function makeRuleStr(str, rule) {
 // Returns string
 function makeSheetDeclStr(decl) {
   function makeCtx(prop, f) {
-    return { prop: prop, value: decl[prop], f: f };
+    return { 
+      prop: prop, 
+      value: decl[prop], 
+      important: decl.getPropertyPriority(prop) == 'important', 
+      f: f 
+    };
   }
 
   function makeStr(str, ctx) {
     if(ctx.value != '') {
       const newValue = ctx.f(ctx.value);
       if(newValue) {
-        str += CSS_NAME_FOR_PROP[ctx.prop]+':'+newValue+' !important;';
+        str += CSS_NAME_FOR_PROP[ctx.prop]+':'+newValue+
+          (ctx.important ? ' !important;' : ';');
       }
     }
     return str;
@@ -469,7 +554,11 @@ function makeSheetDeclStr(decl) {
 // Returns string
 function makeAttributeDeclStr(decl) {
   function makeCtx(prop, f) {
-    return { prop: prop, f: f };
+    return {
+      prop: prop,
+      important: decl.getPropertyPriority(prop) == 'important',
+      f: f
+    };
   }
 
   function modifyDecl(ctx, decl) {
@@ -477,7 +566,8 @@ function makeAttributeDeclStr(decl) {
     if(value == '') {
       return;
     }
-    decl[ctx.prop] = ctx.f(value);
+    decl.setProperty(CSS_NAME_FOR_PROP[ctx.prop], ctx.f(value), 
+      (ctx.important ? 'important' : ''));
   }
 
   const div = document.createElement('div');
