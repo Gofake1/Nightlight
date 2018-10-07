@@ -5,6 +5,8 @@ Browse the internet more comfortably at night
 
 Nightlight is a Safari app extension that darkens websites while attempting to preserve their original designs.
 
+To Little Snitch users: you'll notice that SafariExtension sends HTTP(S) requests to work around Safari limitations.
+
 ### Acknowledgements
 
 * [Solar](https://github.com/ceeK/Solar) (MIT)

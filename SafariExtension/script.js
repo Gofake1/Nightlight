@@ -281,12 +281,13 @@ function onMutation(mutations) {
 
 // Darken before document finishes loading
 function quickStart() {
-  return [BASIC].reduce(makeStyleSheetBuiltinBundle, []);
+  const builtin = [BASIC].reduce(makeStyleSheetBuiltinBundle, []);
+  const override = [].slice.call(document.styleSheets)
+    .reduce(makeStyleSheetOverrideBundle, []);
+  return builtin.concat(override);
 }
 
 function start() {
-  const styleSheets = [].slice.call(document.styleSheets)
-    .reduce(makeStyleSheetOverrideBundle, []);
   const styleAttributes = [].slice.call(document.querySelectorAll('[style]'))
     .reduce(makeStyleAttributeBundle, []);
   const svgFills = [].slice.call(document.querySelectorAll('[fill]'))
@@ -302,7 +303,7 @@ function start() {
     .reduce(makeSvgStopColorBundle, []);
   const images = [].slice.call(document.getElementsByTagName('img'))
     .reduce(makeImageBundle, []);
-  return styleSheets.concat(styleAttributes).concat(svgFills).concat(images);
+  return styleAttributes.concat(svgFills).concat(images);
 }
 
 // --- Bundle helpers ---
@@ -517,10 +518,11 @@ function makeRuleStr(str, rule) {
 // Returns string
 function makeSheetDeclStr(decl) {
   function makeCtx(prop, f) {
-    return { 
-      prop: prop, 
-      value: decl[prop], 
-      important: decl.getPropertyPriority(prop) == 'important', 
+    return {
+      prop: prop,
+      value: decl[prop],
+      isImportant: decl.getPropertyPriority(CSS_NAME_FOR_PROP[prop]) ==
+        'important',
       f: f 
     };
   }
@@ -530,7 +532,7 @@ function makeSheetDeclStr(decl) {
       const newValue = ctx.f(ctx.value);
       if(newValue) {
         str += CSS_NAME_FOR_PROP[ctx.prop]+':'+newValue+
-          (ctx.important ? ' !important;' : ';');
+          (ctx.isImportant ? '!important;' : ';');
       }
     }
     return str;
@@ -556,7 +558,7 @@ function makeAttributeDeclStr(decl) {
   function makeCtx(prop, f) {
     return {
       prop: prop,
-      important: decl.getPropertyPriority(prop) == 'important',
+      priority: decl.getPropertyPriority(CSS_NAME_FOR_PROP[prop]),
       f: f
     };
   }
@@ -566,8 +568,7 @@ function makeAttributeDeclStr(decl) {
     if(value == '') {
       return;
     }
-    decl.setProperty(CSS_NAME_FOR_PROP[ctx.prop], ctx.f(value), 
-      (ctx.important ? 'important' : ''));
+    decl.setProperty(CSS_NAME_FOR_PROP[ctx.prop], ctx.f(value), ctx.priority);
   }
 
   const div = document.createElement('div');
