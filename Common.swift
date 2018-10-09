@@ -18,6 +18,7 @@ enum AutoOnMode: String {
     case manual
     case custom
     case sunset
+    case system
 }
 
 enum AppDefaultKind: String {

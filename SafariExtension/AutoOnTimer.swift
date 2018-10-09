@@ -6,16 +6,17 @@
 //  Copyright © 2018 Gofake1. All rights reserved.
 //
 
+import AppKit
 import CoreLocation
 
-final class AutoOnTimer: NSObject {
-    static let shared = AutoOnTimer()
-    private var timer: NSObject?
+final class AutoOn: NSObject {
+    static let shared = AutoOn()
+    private var impl: NSObject?
     
     private override init() {
         super.init()
         AppDefaults.registerDefaults()
-        timer = AppDefaults.autoOnMode.makeTimer()
+        impl = AppDefaults.autoOnMode.makeImpl()
         AppDefaults.addObserver(self, forDefaults: [.autoOnMode])
     }
     
@@ -24,7 +25,7 @@ final class AutoOnTimer: NSObject {
     {
         switch AppDefaultKind(rawValue: keyPath!)! {
         case .autoOnMode:
-            timer = AutoOnMode(rawValue: change![.newKey]! as! String)!.makeTimer()
+            impl = AutoOnMode(rawValue: change![.newKey]! as! String)!.makeImpl()
         default:
             fatalError()
         }
@@ -35,11 +36,11 @@ final class AutoOnTimer: NSObject {
     }
 }
 
-final class CustomTimer: NSObject {
+private final class CustomTimeImpl: NSObject {
     private var onTimer = Timer()
     private var offTimer = Timer()
     
-    fileprivate override init() {
+    override init() {
         super.init()
         onTimer = makeTimer(seconds: AppDefaults.autoOnFromTime) { AppDefaults.isOn = true }
         offTimer = makeTimer(seconds: AppDefaults.autoOnToTime) { AppDefaults.isOn = false }
@@ -77,11 +78,11 @@ final class CustomTimer: NSObject {
     }
 }
 
-final class SunsetTimer: NSObject {
+private final class SunsetTimeImpl: NSObject {
     private var onTimer = Timer()
     private var offTimer = Timer()
     
-    fileprivate override init() {
+    override init() {
         super.init()
         if let latitude = AppDefaults.autoOnLatitude, let longitude = AppDefaults.autoOnLongitude {
             let coordinate = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
@@ -140,12 +141,31 @@ final class SunsetTimer: NSObject {
     }
 }
 
+private final class SystemAppearanceImpl: NSObject {
+    private let effectiveAppearanceObv: NSKeyValueObservation
+    
+    override init() {
+        if #available(OSXApplicationExtension 10.14, *) {
+            effectiveAppearanceObv = NSApp.observe(\.effectiveAppearance) { (_, _) in
+                guard let bestMatch = NSApp.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) else { return }
+                AppDefaults.isOn = bestMatch == .darkAqua
+            }
+            super.init()
+            guard let bestMatch = NSApp.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) else { return }
+            AppDefaults.isOn = bestMatch == .darkAqua
+        } else {
+            fatalError()
+        }
+    }
+}
+
 extension AutoOnMode {
-    fileprivate func makeTimer() -> NSObject? {
+    fileprivate func makeImpl() -> NSObject? {
         switch self {
         case .manual:   return nil
-        case .custom:   return CustomTimer()
-        case .sunset:   return SunsetTimer()
+        case .custom:   return CustomTimeImpl()
+        case .sunset:   return SunsetTimeImpl()
+        case .system:   return SystemAppearanceImpl()
         }
     }
 }

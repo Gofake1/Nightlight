@@ -20,6 +20,7 @@ final class ViewController: NSViewController {
     @IBOutlet weak var sunsetLabel: NSTextField!
     @IBOutlet weak var latitudeField: NSTextField!
     @IBOutlet weak var longitudeField: NSTextField!
+    @IBOutlet weak var systemRadio: NSButton!
     
     private let dateFormatter: DateFormatter = {
         let df = DateFormatter()
@@ -31,10 +32,14 @@ final class ViewController: NSViewController {
     override func viewDidLoad() {
         AppDefaults.registerDefaults()
         
+        if #available(macOS 10.14, *) {
+            systemRadio.isEnabled = true
+        }
         switch AppDefaults.autoOnMode {
         case .manual:   manualRadio.state = .on
         case .custom:   customRadio.state = .on
         case .sunset:   sunsetRadio.state = .on
+        case .system:   systemRadio.state = .on
         }
         customFromDatePicker.dateValue = AppDefaults.autoOnFromTime.date
         customToDatePicker.dateValue = AppDefaults.autoOnToTime.date
@@ -66,6 +71,8 @@ final class ViewController: NSViewController {
         case sunsetRadio:
             AppDefaults.autoOnMode = .sunset
             sunsetLabel.stringValue = makeSunsetLabelText()
+        case systemRadio:
+            AppDefaults.autoOnMode = .system
         default:
             fatalError()
         }

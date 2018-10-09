@@ -86,6 +86,8 @@ final class SafariExtensionViewController: SFSafariExtensionViewController {
         case .sunset:
             return makeSunsetAutoOnLabelText(latitude: AppDefaults.autoOnLatitude,
                                              longitude: AppDefaults.autoOnLongitude)
+        case .system:
+            return "Match System Appearance"
         }
     }
     

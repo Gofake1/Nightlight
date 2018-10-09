@@ -12,7 +12,7 @@ final class SafariExtensionHandler: SFSafariExtensionHandler {
     override init() {
         super.init()
         // The system instantiates this class often, so KVO is handled by helper singletons
-        _ = AutoOnTimer.shared
+        _ = AutoOn.shared
         _ = IsOnObserver.shared
     }
     
