@@ -235,9 +235,7 @@ function onLoad() {
 function onMutation(mutations) {
   function makeBundlesForMutation(arr, m) {
     function makeBundle(arr, node) {
-      if(node.nodeType != Node.ELEMENT_NODE ||
-        node.id.substring(0, 11) == '_nightlight')
-      {
+      if(node.nodeType != Node.ELEMENT_NODE) {
         return arr;
       }
       if(node.sheet) {
@@ -315,6 +313,9 @@ function makeStyleSheetBuiltinBundle(arr, str) {
 
 // sheet - `CSSStyleSheet`
 function makeStyleSheetOverrideBundle(arr, sheet) {
+  if(sheet.ownerNode.id.substring(0, 11) == '_nightlight') {
+    return arr;
+  }
   if(sheet.cssRules) {
     return makeStyleSheetOverrideBundleFromSheet(arr, sheet);
   } else {
@@ -491,9 +492,17 @@ function makeLightStyleColor(str) {
 // styleSheet - `CSSStyleSheet`
 // Returns string
 function makeStyle(styleSheet) {
-  if(!styleSheet.media || // Imported style sheets have null media
-    VALID_MEDIA_TYPES.includes(styleSheet.media.mediaText))
-  {
+  function isValidMediaType() {
+    for(const styleMedium of styleSheet.media) {
+      if(VALID_MEDIA_TYPES.has(styleMedium)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // Imported style sheets have null media
+  if(!styleSheet.media || isValidMediaType()) {
     return [].slice.call(styleSheet.cssRules).reduce(makeRuleStr, '');
   } else {
     return '';
