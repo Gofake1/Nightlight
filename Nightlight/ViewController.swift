@@ -32,6 +32,9 @@ final class ViewController: NSViewController {
     override func viewDidLoad() {
         AppDefaults.registerDefaults()
         
+        makeExtensionStatusLabelText { [extensionStatusLabel] in
+            extensionStatusLabel!.stringValue = $0
+        }
         if #available(macOS 10.14, *) {
             systemRadio.isEnabled = true
         }
@@ -46,19 +49,11 @@ final class ViewController: NSViewController {
         sunsetLabel.stringValue = makeSunsetLabelText()
         latitudeField.stringValue = AppDefaults.autoOnLatitude?.description ?? ""
         longitudeField.stringValue = AppDefaults.autoOnLongitude?.description ?? ""
-        
-        SFSafariExtensionManager
-            .getStateOfSafariExtension(withIdentifier: "net.gofake1.Nightlight.SafariExtension") { [weak self] in
-                if let error = $1 {
-                    DispatchQueue.main.async {
-                        self!.extensionStatusLabel.stringValue = error.localizedDescription
-                    }
-                } else if let state = $0 {
-                    DispatchQueue.main.async {
-                        self!.extensionStatusLabel.stringValue = state.isEnabled ?
-                            "Nightlight is Enabled" : "Nightlight is Disabled"
-                    }
-                }
+    }
+    
+    @IBAction func refreshExtensionStatus(_ sender: NSButton) {
+        makeExtensionStatusLabelText { [extensionStatusLabel] in
+            extensionStatusLabel!.stringValue = $0
         }
     }
     
@@ -99,6 +94,18 @@ final class ViewController: NSViewController {
             fatalError()
         }
         sunsetLabel.stringValue = makeSunsetLabelText()
+    }
+    
+    private func makeExtensionStatusLabelText(completion completionHandler: @escaping (String) -> ()) {
+        let identifier = "net.gofake1.Nightlight.SafariExtension"
+        SFSafariExtensionManager.getStateOfSafariExtension(withIdentifier: identifier) {
+            if let error = $1 {
+                DispatchQueue.main.async { completionHandler(error.localizedDescription) }
+            } else if let state = $0 {
+                DispatchQueue.main.async { completionHandler(state.isEnabled ? "Nightlight is Enabled" :
+                    "Nightlight is Disabled") }
+            }
+        }
     }
     
     private func makeSunsetLabelText() -> String {
