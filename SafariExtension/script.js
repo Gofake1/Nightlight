@@ -129,7 +129,7 @@ const LIGHT_PROPS = [
 'webkitTextEmphasisColor',
 'webkitTextStrokeColor'
 ];
-const VALID_MEDIA_TYPES = ['', 'all', 'screen'];
+const VALID_MEDIA_TYPES = new Set(['all', 'screen']);
 const CSS_NAME_FOR_PROP = {
   'backgroundColor': 'background-color',
   'borderBottomColor': 'border-bottom-color',
@@ -493,6 +493,10 @@ function makeLightStyleColor(str) {
 // Returns string
 function makeStyle(styleSheet) {
   function isValidMediaType() {
+    // Imported style sheets have null media
+    if(!styleSheet.media || styleSheet.media.mediaText == '') {
+      return true;
+    }
     for(const styleMedium of styleSheet.media) {
       if(VALID_MEDIA_TYPES.has(styleMedium)) {
         return true;
@@ -501,8 +505,7 @@ function makeStyle(styleSheet) {
     return false;
   }
 
-  // Imported style sheets have null media
-  if(!styleSheet.media || isValidMediaType()) {
+  if(isValidMediaType()) {
     return [].slice.call(styleSheet.cssRules).reduce(makeRuleStr, '');
   } else {
     return '';
