@@ -63,31 +63,18 @@ class StyleSheetOverrideBundle {
 }
 StyleSheetOverrideBundle.id = 0;
 
-class StyleAttributeBundle {
-  constructor(node, originalStyle, newStyle) {
+class AttributeBundle {
+  constructor(node, attr, originalValue, newValue) {
     this.node = node;
-    this.originalStyle = originalStyle;
-    this.newStyle = newStyle;
+    this.attr = attr;
+    this.originalValue = originalValue;
+    this.newValue = newValue;
   }
   enable() {
-    this.node.style = this.newStyle;
+    this.node.setAttribute(this.attr, this.newValue);
   }
   disable() {
-    this.node.style = this.originalStyle;
-  }
-}
-
-class SvgFillBundle {
-  constructor(node, originalFill, newFill) {
-    this.node = node;
-    this.originalFill = originalFill;
-    this.newFill = newFill;
-  }
-  enable() {
-    this.node.setAttribute('fill', this.newFill);
-  }
-  disable() {
-    this.node.setAttribute('fill', this.originalFill);
+    this.node.setAttribute(this.attr, this.originalValue);
   }
 }
 
@@ -129,7 +116,7 @@ const LIGHT_PROPS = [
 'webkitTextEmphasisColor',
 'webkitTextStrokeColor'
 ];
-const VALID_MEDIA_TYPES = new Set(['all', 'screen']);
+const VALID_MEDIA_TYPES = new Set(['all', 'screen', 'only screen']);
 const CSS_NAME_FOR_PROP = {
   'backgroundColor': 'background-color',
   'borderBottomColor': 'border-bottom-color',
@@ -210,22 +197,15 @@ function warmup() {
     WARMED_UP = true;
     if(document.readyState == 'loading') {
       document.addEventListener('DOMContentLoaded', onDomContentLoaded);
-      window.addEventListener('load', onLoad);
     } else if(document.readyState == 'interactive') {
-      window.addEventListener('load', onLoad);
       onDomContentLoaded();
     } else if(document.readyState == 'complete') {
       onDomContentLoaded();
-      onLoad();
     }
   }
 }
 
 function onDomContentLoaded() {
-  BUNDLE_LIST.hotload(quickStart());
-}
-
-function onLoad() {
   makeImageShader();
   BUNDLE_LIST.hotload(start());
   MUTATION_OBSERVER.observe(document, { childList: true, subtree: true });
@@ -242,7 +222,10 @@ function onMutation(mutations) {
         arr = makeStyleSheetOverrideBundle(arr, node.sheet);
       }
       if(node.style) {
-        arr = makeStyleAttributeBundle(arr, node);
+        arr = makeStyleBundle(arr, node);
+      }
+      if(node.bgColor) {
+        arr = makeBgColorBundle(arr, node);
       }
       if(node.getAttribute('fill')) {
         arr = makeSvgFillBundle(arr, node);
@@ -277,17 +260,16 @@ function onMutation(mutations) {
   BUNDLE_LIST.hotload(bundles);
 }
 
-// Darken before document finishes loading
-function quickStart() {
-  const builtin = [BASIC].reduce(makeStyleSheetBuiltinBundle, []);
-  const override = [].slice.call(document.styleSheets)
-    .reduce(makeStyleSheetOverrideBundle, []);
-  return builtin.concat(override);
-}
-
 function start() {
-  const styleAttributes = [].slice.call(document.querySelectorAll('[style]'))
-    .reduce(makeStyleAttributeBundle, []);
+  const builtins = [BASIC].reduce(makeStyleSheetBuiltinBundle, []);
+  const overrides = [].slice.call(document.styleSheets)
+    .reduce(makeStyleSheetOverrideBundle, []);
+  const styles = [].slice.call(document.querySelectorAll('[style]'))
+    .reduce(makeStyleBundle, []);
+  const bgColors = [].slice.call(document.querySelectorAll('[bgcolor]'))
+    .reduce(makeBgColorBundle, []);
+  const fontColors = [].slice.call(document.querySelectorAll('font[color]'))
+    .reduce(makeFontColorBundle, []);
   const svgFills = [].slice.call(document.querySelectorAll('[fill]'))
     .reduce(makeSvgFillBundle, []);
   const svgFloods = [].slice.call(document.querySelectorAll('[flood-color]'))
@@ -301,7 +283,8 @@ function start() {
     .reduce(makeSvgStopColorBundle, []);
   const images = [].slice.call(document.getElementsByTagName('img'))
     .reduce(makeImageBundle, []);
-  return styleAttributes.concat(svgFills).concat(images);
+  return builtins.concat(overrides).concat(styles).concat(bgColors)
+    .concat(fontColors).concat(svgFills).concat(images);
 }
 
 // --- Bundle helpers ---
@@ -345,10 +328,29 @@ function addStyleSheetOverrideBundle(str) {
   }
 }
 
-function makeStyleAttributeBundle(arr, node) {
-  const decl = makeAttributeDeclStr(node.style);
-  if(decl) {
-    arr.push(new StyleAttributeBundle(node, node.style.cssText, decl));
+function makeStyleBundle(arr, node) {
+  const str = makeAttributeDeclStr(node.style);
+  if(str) {
+    arr.push(new AttributeBundle(node, 'style', node.style.cssText, str));
+  }
+  return arr;
+}
+
+function makeBgColorBundle(arr, node) {
+  const str = makeDarkStyleColor(node.bgColor);
+  if(str) {
+    // Workaround: Safari doesn't display correct color when formatted as RGB
+    arr.push(new AttributeBundle(node, 'bgcolor', node.bgColor,
+      rgbToHex(str)));
+  }
+  return arr;
+}
+
+function makeFontColorBundle(arr, node) {
+  const str = makeLightStyleColor(node.color);
+  if(str) {
+    // Workaround: Safari doesn't display correct color when formatted as RGB
+    arr.push(new AttributeBundle(node, 'color', node.color, rgbToHex(str)));
   }
   return arr;
 }
@@ -357,7 +359,7 @@ function makeSvgFillBundle(arr, node) {
   const fill = node.getAttribute('fill');
   const newFill = makeSvgFillColor(fill);
   if(newFill) {
-    arr.push(new SvgFillBundle(node, fill, newFill));
+    arr.push(new AttributeBundle(node, 'fill', fill, newFill));
   }
   return arr;
 }
@@ -408,7 +410,7 @@ function makeImageBundle(arr, node) {
 
 // ---
 
-// --- Style sheet/attribute and SVG helpers ---
+// --- SVG helpers ---
 
 function makeSvgFillColor(str) {
   if(str.substring(0, 4) == 'url(') {
@@ -489,15 +491,15 @@ function makeLightStyleColor(str) {
 
 // --- Style sheet helpers ---
 
-// styleSheet - `CSSStyleSheet`
+// ruler - `CSSStyleSheet` or `CSSMediaRule`
 // Returns string
-function makeStyle(styleSheet) {
+function makeStyle(ruler) {
   function isValidMediaType() {
     // Imported style sheets have null media
-    if(!styleSheet.media || styleSheet.media.mediaText == '') {
+    if(!ruler.media || ruler.media.mediaText == '') {
       return true;
     }
-    for(const styleMedium of styleSheet.media) {
+    for(const styleMedium of ruler.media) {
       if(VALID_MEDIA_TYPES.has(styleMedium)) {
         return true;
       }
@@ -506,7 +508,7 @@ function makeStyle(styleSheet) {
   }
 
   if(isValidMediaType()) {
-    return [].slice.call(styleSheet.cssRules).reduce(makeRuleStr, '');
+    return [].slice.call(ruler.cssRules).reduce(makeRuleStr, '');
   } else {
     return '';
   }
@@ -520,9 +522,11 @@ function makeRuleStr(str, rule) {
     if(decl != '') {
       return str += rule.selectorText+'{'+decl+'}';
     }
-  } else if (rule.type == 3) {
+  } else if(rule.type == 3) {
     str += makeStyle(rule.styleSheet);
-  }
+  } else if(rule.type == 4) {
+    str += '@media '+rule.media.mediaText+'{'+makeStyle(rule)+'}';
+  } 
   return str;
 }
 
@@ -738,4 +742,10 @@ function same(r, g, b, a) {
   return { r: r, g: g, b: b, a: a };
 }
 
+function rgbToHex(str) {
+  const tokens = str.slice(4, -1).split(', ');
+  const num = parseInt(tokens[2]) | (parseInt(tokens[1]) << 8) | 
+    (parseInt(tokens[0] << 16));
+  return '#'+(0x1000000+num).toString(16).slice(1);
+}
 // ---
