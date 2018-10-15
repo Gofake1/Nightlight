@@ -461,7 +461,7 @@ function makeDarkStyleColor(str) {
   return makeColor(str, DARK_STYLE_CACHE, function(r, g, b, a) {
     if(saturation(r, g, b) > 0.15) {
       // Darken colors
-      return shaded(-10, r, g, b, a);
+      return shaded(-50, r, g, b, a);
     } else if(luminance(r, g, b) > 100) {
       // Invert bright grays
       return inverted(r, g, b, a);
@@ -724,20 +724,12 @@ function luminance(r, g, b) {
 }
 
 function shaded(percent, r, g, b, a) {
-  function clamped(x, lo, hi) {
-    if(x < lo) {
-      return lo;
-    } else if(x > hi) {
-      return hi;
-    } else {
-      return x;
-    }
-  }
-
-  const rr = clamped(Math.round(r + (256-r)*(percent/100)), 0, 255);
-  const gg = clamped(Math.round(g + (256-g)*(percent/100)), 0, 255);
-  const bb = clamped(Math.round(b + (256-b)*(percent/100)), 0, 255);
-  return { r: rr, g: gg, b: bb, a: a };
+  const f = (percent >= 0) ? function(component) {
+    return Math.round(component + (255-component)*(percent/100));
+  } : function(component) {
+    return Math.round(component + component*(percent/100));
+  };
+  return { r: f(r), g: f(g), b: f(b), a: a };
 }
 
 function inverted(r, g, b, a) {
