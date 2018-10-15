@@ -508,7 +508,13 @@ function makeStyle(ruler) {
   }
 
   if(isValidMediaType()) {
-    return [].slice.call(ruler.cssRules).reduce(makeRuleStr, '');
+    if(!ruler.cssRules) {
+      // Workaround: Importing cross-origin style sheet
+      safari.extension.dispatchMessage('wantsResource', { href: ruler.href });
+      return '';
+    } else {
+      return [].slice.call(ruler.cssRules).reduce(makeRuleStr, '');
+    }
   } else {
     return '';
   }
