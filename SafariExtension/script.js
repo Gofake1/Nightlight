@@ -741,7 +741,7 @@ function same(r, g, b, a) {
 }
 
 function rgbToHex(str) {
-  const tokens = str.slice(4, -1).split(', ');
+  const tokens = str.slice(4, -1).split(',');
   const num = parseInt(tokens[2]) | (parseInt(tokens[1]) << 8) | 
     (parseInt(tokens[0] << 16));
   return '#'+(0x1000000+num).toString(16).slice(1);
