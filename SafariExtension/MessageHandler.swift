@@ -49,6 +49,8 @@ protocol MessageHandlerImplType {
     func wantsResource(page: SFSafariPage, href: String)
 }
 
+typealias StyleSheetResource = String
+
 extension MessageHandlerImplType {
     func wantsResource(page: SFSafariPage, href: String) {
         NSLog("wantsResource \(href)") //*
@@ -64,14 +66,13 @@ extension MessageHandlerImplType {
                 if let error = error {
                     NSLog("\(error)") //*
                 } else if let data = data, let res = res {
-                    let resource = String(data: data, encoding: .utf8)!
+                    let resource = StyleSheetResource(data: data, encoding: .utf8)!.fixed(url: url)
                     page.dispatchMessageToScript(withName: "resource", userInfo: ["resource": resource])
-                    let cachedRes = CachedURLResponse(response: res, data: data)
+                    let cachedRes = CachedURLResponse(response: res, data: resource.data(using: .utf8)!)
                     URLCache.shared.storeCachedResponse(cachedRes, for: request)
                 }
             } .resume()
         }
-        
     }
 }
 
@@ -102,5 +103,20 @@ extension EnabledMessageHandlerImpl: MessageHandlerImplType {
 extension Bool {
     fileprivate func makeMessageHandlerImpl() -> MessageHandlerImplType {
         return self ? EnabledMessageHandlerImpl() : DisabledMessageHandlerImpl()
+    }
+}
+
+extension StyleSheetResource {
+    func fixed(url: URL) -> StyleSheetResource {
+        // Replace relative URLs with absolute
+        let parentPath = "/"+url.pathComponents.dropFirst().dropLast(2).joined(separator: "/")
+        let absoluteParent: String = {
+            var uc = URLComponents(url: url, resolvingAgainstBaseURL: true)!
+            uc.path = parentPath
+            return uc.string!
+        }()
+        // NEEDS OPTIMIZATION
+        return replacingOccurrences(of: "url(..", with: "url(\(absoluteParent)")
+            .replacingOccurrences(of: "url(\"..", with: "url(\"\(absoluteParent)")
     }
 }
