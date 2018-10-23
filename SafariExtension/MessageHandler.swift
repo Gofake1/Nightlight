@@ -106,17 +106,79 @@ extension Bool {
     }
 }
 
+extension Array where Element == ACMatch {
+    /// - precondition: Array is sorted
+    fileprivate func removingOverlaps() -> [Element] {
+        guard count > 1 else { return self }
+        var withoutOverlaps = [self[0]]
+        for element in self[1...] {
+            let last = withoutOverlaps.last!
+            if (last.0 == element.0 && last.1 <= element.1) {
+                withoutOverlaps.removeLast()
+            }
+            withoutOverlaps.append(element)
+        }
+        return withoutOverlaps
+    }
+}
+
+extension String {
+    fileprivate func replacingOccurrences(mapping: [String: String], trie: ACTrie) -> String {
+        let matches = trie.match(string: self).removingOverlaps()
+        var newStr = self
+        for match in matches.reversed() {
+            let startIdx = index(startIndex, offsetBy: match.0)
+            let endIdx = index(startIndex, offsetBy: match.1)
+            let replacement = mapping[match.2]!
+            newStr.replaceSubrange(startIdx...endIdx, with: replacement)
+        }
+        return newStr
+    }
+}
+
+private let _trie = ACTrie(matching: [
+    "url(//", "url('//", "url(\"//",
+    "url(http:", "url('http:", "url(\"http:",
+    "url(https:", "url('https:", "url(\"https:",
+    "url(data:", "url('data:", "url(\"data:",
+    "url(", "url('", "url(\"",
+    "url(/", "url('/", "url(\""
+    ])
+
 extension StyleSheetResource {
-    func fixed(url: URL) -> StyleSheetResource {
+    fileprivate func fixed(url: URL) -> StyleSheetResource {
         // Replace relative URLs with absolute
-        let parentPath = "/"+url.pathComponents.dropFirst().dropLast(2).joined(separator: "/")
-        let absoluteParent: String = {
-            var uc = URLComponents(url: url, resolvingAgainstBaseURL: true)!
-            uc.path = parentPath
-            return uc.string!
-        }()
-        // NEEDS OPTIMIZATION
-        return replacingOccurrences(of: "url(..", with: "url(\(absoluteParent)")
-            .replacingOccurrences(of: "url(\"..", with: "url(\"\(absoluteParent)")
+        var uc = URLComponents(url: url, resolvingAgainstBaseURL: true)!
+        let parent: String = {
+            let parentPath = url.pathComponents.dropFirst().dropLast()
+            $0.path = parentPath.isEmpty ? "" : "/"+parentPath.joined(separator: "/")
+            $0.query = nil
+            return $0.string!
+        }(&uc)
+        let root: String = {
+            $0.path = ""
+            return $0.string!
+        }(&uc)
+        let mapping = [
+            "url(//": "url(//",
+            "url('//": "url('//",
+            "url(\"//": "url(\"//",
+            "url(http:": "url(http:",
+            "url('http:": "url('http:",
+            "url(\"http:": "url(\"http:",
+            "url(https:": "url(https:",
+            "url('https:": "url('https:",
+            "url(\"https:": "url(\"https:",
+            "url(data:": "url(data:",
+            "url('data:": "url('data:",
+            "url(\"data:": "url(\"data:",
+            "url(": "url(\(parent)/",
+            "url('": "url('\(parent)/",
+            "url(\"": "url(\"\(parent)/",
+            "url(/": "url(\(root)/",
+            "url('/": "url('\(root)/",
+            "url(\"/": "url(\"\(root)/"
+        ]
+        return replacingOccurrences(mapping: mapping, trie: _trie)
     }
 }
