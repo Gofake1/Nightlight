@@ -32,9 +32,7 @@ final class ViewController: NSViewController {
     override func viewDidLoad() {
         AppDefaults.registerDefaults()
         
-        makeExtensionStatusLabelText { [extensionStatusLabel] in
-            extensionStatusLabel!.stringValue = $0
-        }
+        makeExtensionStatusLabelText { [extensionStatusLabel] in extensionStatusLabel!.stringValue = $0 }
         if #available(macOS 10.14, *) {
             systemRadio.isEnabled = true
         }
@@ -52,9 +50,7 @@ final class ViewController: NSViewController {
     }
     
     @IBAction func refreshExtensionStatus(_ sender: NSButton) {
-        makeExtensionStatusLabelText { [extensionStatusLabel] in
-            extensionStatusLabel!.stringValue = $0
-        }
+        makeExtensionStatusLabelText { [extensionStatusLabel] in extensionStatusLabel!.stringValue = $0 }
     }
     
     @IBAction func radioChanged(_ sender: NSButton) {

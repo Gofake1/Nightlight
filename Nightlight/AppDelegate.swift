@@ -10,6 +10,10 @@ import AppKit
 
 @NSApplicationMain
 final class AppDelegate: NSObject {
+    @IBAction func emptyCache(_ sender: NSMenuItem) {
+        DistributedNotificationCenter.default().post(name: _notificationEmptyCache, object: _objectHost)
+    }
+    
     @IBAction func showHelp(_ sender: NSMenuItem) {
         NSWorkspace.shared.open(URL(string: "https://gofake1.net/projects/nightlight.html")!)
     }

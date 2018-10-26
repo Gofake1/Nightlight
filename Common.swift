@@ -13,6 +13,8 @@ let _defaults: [String: Any] = [
     AppDefaultKind.autoOnFromTime.rawValue:   72000,
     AppDefaultKind.autoOnToTime.rawValue:     28800
 ]
+let _notificationEmptyCache = NSNotification.Name("emptyCache")
+let _objectHost = "net.gofake1.Nightlight"
 
 enum AutoOnMode: String {
     case manual

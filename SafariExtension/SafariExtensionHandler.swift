@@ -13,6 +13,7 @@ final class SafariExtensionHandler: SFSafariExtensionHandler {
         super.init()
         // The system instantiates this class often, so KVO is handled by helper singletons
         _ = AutoOn.shared
+        _ = CacheProxy.shared
         _ = IsOnObserver.shared
     }
     

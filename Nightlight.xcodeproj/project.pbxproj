@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		630563BC2114E47B0028BF36 /* Common.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63AAA2A62110397A001C2801 /* Common.swift */; };
 		63093F00211E702300BBAA22 /* AutoOnTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63093EFF211E702300BBAA22 /* AutoOnTimer.swift */; };
+		631B2034218131C6004429CE /* CacheProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 631B2033218131C6004429CE /* CacheProxy.swift */; };
 		631C62202124A30100DF9B4C /* Calendar+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 631C621F2124A30100DF9B4C /* Calendar+.swift */; };
 		631C622521263A8400DF9B4C /* MessageHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 631C622421263A8400DF9B4C /* MessageHandler.swift */; };
 		6325219C217C2E20005B6BC5 /* AhoCorasick.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6325219B217C2E20005B6BC5 /* AhoCorasick.swift */; };
@@ -78,6 +79,7 @@
 
 /* Begin PBXFileReference section */
 		63093EFF211E702300BBAA22 /* AutoOnTimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoOnTimer.swift; sourceTree = "<group>"; };
+		631B2033218131C6004429CE /* CacheProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacheProxy.swift; sourceTree = "<group>"; };
 		631C621F2124A30100DF9B4C /* Calendar+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Calendar+.swift"; sourceTree = "<group>"; };
 		631C622421263A8400DF9B4C /* MessageHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageHandler.swift; sourceTree = "<group>"; };
 		6325219B217C2E20005B6BC5 /* AhoCorasick.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AhoCorasick.swift; sourceTree = "<group>"; };
@@ -236,6 +238,7 @@
 				6325219B217C2E20005B6BC5 /* AhoCorasick.swift */,
 				63E03E892116BD5D00DC7474 /* AppDefaults.swift */,
 				63093EFF211E702300BBAA22 /* AutoOnTimer.swift */,
+				631B2033218131C6004429CE /* CacheProxy.swift */,
 				631C621F2124A30100DF9B4C /* Calendar+.swift */,
 				631C622421263A8400DF9B4C /* MessageHandler.swift */,
 				63A8279620FC92F100671659 /* SafariExtensionHandler.swift */,
@@ -429,6 +432,7 @@
 				6325219C217C2E20005B6BC5 /* AhoCorasick.swift in Sources */,
 				63E03E8A2116BD5D00DC7474 /* AppDefaults.swift in Sources */,
 				63093F00211E702300BBAA22 /* AutoOnTimer.swift in Sources */,
+				631B2034218131C6004429CE /* CacheProxy.swift in Sources */,
 				631C62202124A30100DF9B4C /* Calendar+.swift in Sources */,
 				631C622521263A8400DF9B4C /* MessageHandler.swift in Sources */,
 				63A8279720FC92F100671659 /* SafariExtensionHandler.swift in Sources */,
