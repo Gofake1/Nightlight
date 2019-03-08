@@ -7,8 +7,8 @@
 //
 
 import AppKit
-import CoreLocation
-import SafariServices
+import struct CoreLocation.CLLocationCoordinate2D
+import class SafariServices.SFSafariExtensionManager
 
 final class ViewController: NSViewController {
     @IBOutlet weak var extensionStatusLabel: NSTextField!
@@ -32,7 +32,7 @@ final class ViewController: NSViewController {
     override func viewDidLoad() {
         AppDefaults.registerDefaults()
         
-        makeExtensionStatusLabelText { [extensionStatusLabel] in extensionStatusLabel!.stringValue = $0 }
+        setExtensionStatusText { [extensionStatusLabel] in extensionStatusLabel!.stringValue = $0 }
         if #available(macOS 10.14, *) {
             systemRadio.isEnabled = true
         }
@@ -50,7 +50,7 @@ final class ViewController: NSViewController {
     }
     
     @IBAction func refreshExtensionStatus(_ sender: NSButton) {
-        makeExtensionStatusLabelText { [extensionStatusLabel] in extensionStatusLabel!.stringValue = $0 }
+        setExtensionStatusText { [extensionStatusLabel] in extensionStatusLabel!.stringValue = $0 }
     }
     
     @IBAction func radioChanged(_ sender: NSButton) {
@@ -92,7 +92,7 @@ final class ViewController: NSViewController {
         sunsetLabel.stringValue = makeSunsetLabelText()
     }
     
-    private func makeExtensionStatusLabelText(completion completionHandler: @escaping (String) -> ()) {
+    private func setExtensionStatusText(completion completionHandler: @escaping (String) -> ()) {
         let identifier = "net.gofake1.Nightlight.SafariExtension"
         SFSafariExtensionManager.getStateOfSafariExtension(withIdentifier: identifier) {
             if let error = $1 {

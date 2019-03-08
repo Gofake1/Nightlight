@@ -6,7 +6,9 @@
 //  Copyright © 2018 Gofake1. All rights reserved.
 //
 
-import SafariServices
+import class SafariServices.SFSafariExtensionHandler
+import class SafariServices.SFSafariExtensionViewController
+import class SafariServices.SFSafariPage
 
 final class SafariExtensionHandler: SFSafariExtensionHandler {    
     override init() {

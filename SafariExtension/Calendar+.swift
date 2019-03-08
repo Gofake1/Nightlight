@@ -6,7 +6,8 @@
 //  Copyright © 2018 Gofake1. All rights reserved.
 //
 
-import Foundation
+import struct Foundation.Calendar
+import struct Foundation.Date
 
 extension Calendar {
     func date(timeInSeconds seconds: Int) -> Date? {

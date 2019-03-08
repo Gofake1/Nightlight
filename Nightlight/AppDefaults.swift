@@ -6,7 +6,8 @@
 //  Copyright © 2018 Gofake1. All rights reserved.
 //
 
-import CoreLocation
+import typealias CoreLocation.CLLocationDegrees
+import class Foundation.UserDefaults
 
 final class AppDefaults {
     static var autoOnMode: AutoOnMode {

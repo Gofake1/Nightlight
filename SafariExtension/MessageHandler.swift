@@ -6,7 +6,9 @@
 //  Copyright © 2018 Gofake1. All rights reserved.
 //
 
-import SafariServices
+import Foundation
+import class SafariServices.SFSafariApplication
+import class SafariServices.SFSafariPage
 
 final class MessageHandler {
     fileprivate static var impl = AppDefaults.isOn.makeMessageHandlerImpl()

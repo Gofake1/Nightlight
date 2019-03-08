@@ -6,7 +6,7 @@
 //  Copyright © 2018 Gofake1. All rights reserved.
 //
 
-import SafariServices
+import class SafariServices.SFSafariApplication
 
 extension SFSafariApplication {
     static func dispatchMessageToActivePage(withName name: String) {

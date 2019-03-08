@@ -6,8 +6,10 @@
 //  Copyright © 2018 Gofake1. All rights reserved.
 //
 
-import AppKit
-import CoreLocation
+import var AppKit.NSApp
+import struct CoreLocation.CLLocationCoordinate2D
+import typealias CoreLocation.CLLocationDegrees
+import Foundation
 
 final class AutoOn: NSObject {
     static let shared = AutoOn()

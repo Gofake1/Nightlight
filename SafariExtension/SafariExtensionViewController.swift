@@ -6,8 +6,11 @@
 //  Copyright © 2018 Gofake1. All rights reserved.
 //
 
-import CoreLocation
-import SafariServices
+import AppKit
+import struct CoreLocation.CLLocationCoordinate2D
+import typealias CoreLocation.CLLocationDegrees
+import class SafariServices.SFSafariApplication
+import class SafariServices.SFSafariExtensionViewController
 
 final class SafariExtensionViewController: SFSafariExtensionViewController {
     @IBOutlet weak var isOnCheckbox: NSButton!
