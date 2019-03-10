@@ -312,6 +312,7 @@
 				TargetAttributes = {
 					63A8277920FC922500671659 = {
 						CreatedOnToolsVersion = 10.0;
+						LastSwiftMigration = 1020;
 						SystemCapabilities = {
 							com.apple.ApplicationGroups.Mac = {
 								enabled = 1;
@@ -326,6 +327,7 @@
 					};
 					63A8279020FC92F100671659 = {
 						CreatedOnToolsVersion = 10.0;
+						LastSwiftMigration = 1020;
 						SystemCapabilities = {
 							com.apple.ApplicationGroups.Mac = {
 								enabled = 1;
@@ -603,7 +605,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = net.gofake1.Nightlight;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
@@ -623,7 +625,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = net.gofake1.Nightlight;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};
@@ -642,7 +644,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = net.gofake1.Nightlight.SafariExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
@@ -661,7 +663,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = net.gofake1.Nightlight.SafariExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};
