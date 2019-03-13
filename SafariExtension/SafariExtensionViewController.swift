@@ -28,41 +28,9 @@ final class SafariExtensionViewController: SFSafariExtensionViewController {
         return df
     }()
     
-    override func viewDidLoad() {
-        autoOnLabel.stringValue = makeAutoOnLabelText(mode: AppDefaults.autoOnMode)
-        AppDefaults.addObserver(self, forDefaults: [.autoOnMode, .autoOnFromTime, .autoOnToTime,
-                                                    .autoOnLatitude, .autoOnLongitude])
-    }
-    
     override func viewDidAppear() {
         isOnCheckbox.state = AppDefaults.isOn ? .on : .off
-    }
-    
-    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey: Any]?,
-                               context: UnsafeMutableRawPointer?)
-    {
-        switch AppDefaultKind(rawValue: keyPath!)! {
-        case .autoOnMode:
-            autoOnLabel.stringValue = makeAutoOnLabelText(mode: AutoOnMode(rawValue: change![.newKey]! as! String)!)
-        case .autoOnFromTime:
-            assert(AppDefaults.autoOnMode == .custom)
-            autoOnLabel.stringValue = makeCustomAutoOnLabelText(from: change![.newKey]! as! Int,
-                                                                to: AppDefaults.autoOnToTime)
-        case .autoOnToTime:
-            assert(AppDefaults.autoOnMode == .custom)
-            autoOnLabel.stringValue = makeCustomAutoOnLabelText(from: AppDefaults.autoOnFromTime,
-                                                                to: change![.newKey]! as! Int)
-        case .autoOnLatitude:
-            assert(AppDefaults.autoOnMode == .sunset)
-            autoOnLabel.stringValue = makeSunsetAutoOnLabelText(latitude: change![.newKey] as! CLLocationDegrees?,
-                                                                longitude: AppDefaults.autoOnLongitude)
-        case .autoOnLongitude:
-            assert(AppDefaults.autoOnMode == .sunset)
-            autoOnLabel.stringValue = makeSunsetAutoOnLabelText(latitude: AppDefaults.autoOnLatitude,
-                                                                longitude: change![.newKey] as! CLLocationDegrees?)
-        default:
-            fatalError()
-        }
+        autoOnLabel.stringValue = makeAutoOnLabelText()
     }
     
     @IBAction func isOnCheckboxChanged(_ sender: NSButton) {
@@ -73,47 +41,31 @@ final class SafariExtensionViewController: SFSafariExtensionViewController {
         SFSafariApplication.dispatchMessageToActivePage(withName: "TOGGLE")
     }
     
-    func updateSunsetAutoOnLabel(sunset: Date, sunrise: Date) {
-        assert(AppDefaults.autoOnMode == .sunset)
-        // View may not be loaded
-        guard autoOnLabel != nil else { return }
-        autoOnLabel.stringValue = makeSunsetAutoOnLabelText(sunset: sunset, sunrise: sunrise)
-    }
-    
-    private func makeAutoOnLabelText(mode: AutoOnMode) -> String {
-        switch mode {
+    private func makeAutoOnLabelText() -> String {
+        switch AppDefaults.autoOnMode {
         case .manual:
-            return "Manual"
+            return "Nightlight"
         case .custom:
             return makeCustomAutoOnLabelText(from: AppDefaults.autoOnFromTime, to: AppDefaults.autoOnToTime)
         case .sunset:
             return makeSunsetAutoOnLabelText(latitude: AppDefaults.autoOnLatitude,
                                              longitude: AppDefaults.autoOnLongitude)
         case .system:
-            return "Match System Appearance"
+            return "Nightlight: Match System Appearance"
         }
     }
     
     private func makeCustomAutoOnLabelText(from: Int, to: Int) -> String {
-        let fromDateStr = df.string(from: Calendar.autoupdatingCurrent.date(timeInSeconds: from)!)
-        let toDateStr = df.string(from: Calendar.autoupdatingCurrent.date(timeInSeconds: to)!)
-        return "Custom: From \(fromDateStr) to \(toDateStr)"
+        let builder = Date()
+        let fromDate = Calendar.autoupdatingCurrent.date(timeInSeconds: from, using: builder)!
+        let toDate = Calendar.autoupdatingCurrent.date(timeInSeconds: to, using: builder)!
+        return "Nightlight: \(df.string(from: fromDate)) - \(df.string(from: toDate))"
     }
     
     private func makeSunsetAutoOnLabelText(latitude: CLLocationDegrees?, longitude: CLLocationDegrees?) -> String {
-        guard let latitude = latitude, let longitude = longitude else { return "Sunset: No coordinate set" }
-        guard let (sunset, sunrise) = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
-            .makeSolarDates()
-            else { return "Sunset: Invalid coordinate" }
-        return makeSunsetAutoOnLabelText(sunset: sunset, sunrise: sunrise)
-    }
-    
-    private func makeSunsetAutoOnLabelText(sunset: Date, sunrise: Date) -> String {
-        return "Sunset: From \(df.string(from: sunset)) to \(df.string(from: sunrise))"
-    }
-    
-    deinit {
-        AppDefaults.removeObserver(self, forDefaults: [.autoOnMode, .autoOnFromTime, .autoOnToTime,
-                                                       .autoOnLatitude, .autoOnLongitude])
+        guard let latitude = latitude, let longitude = longitude else { return "Nightlight: No coordinate set" }
+        guard let (fromDate, toDate) = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+            .makeDatesForLabel() else { return "Nightlight: Invalid coordinate" }
+        return "Nightlight: \(df.string(from: fromDate)) - \(df.string(from: toDate))"
     }
 }

@@ -10,11 +10,11 @@ import struct Foundation.Calendar
 import struct Foundation.Date
 
 extension Calendar {
-    func date(timeInSeconds seconds: Int) -> Date? {
+    func date(timeInSeconds seconds: Int, using date: Date = Date()) -> Date? {
         let hour = seconds / 3600
         let minute = (seconds - (hour * 3600)) / 60
         let second = seconds - (hour * 3600) - (minute * 60)
         assert(second == 0)
-        return date(bySettingHour: hour, minute: minute, second: 0, of: Date())
+        return self.date(bySettingHour: hour, minute: minute, second: 0, of: date)
     }
 }

@@ -22,7 +22,7 @@ final class ViewController: NSViewController {
     @IBOutlet weak var longitudeField: NSTextField!
     @IBOutlet weak var systemRadio: NSButton!
     
-    private let dateFormatter: DateFormatter = {
+    private let df: DateFormatter = {
         let df = DateFormatter()
         df.dateStyle = .none
         df.timeStyle = .short
@@ -106,12 +106,10 @@ final class ViewController: NSViewController {
     
     private func makeSunsetLabelText() -> String {
         if let latitude = AppDefaults.autoOnLatitude, let longitude = AppDefaults.autoOnLongitude {
-            if let (sunset, sunrise) = CLLocationCoordinate2D(latitude: latitude,
-                                                              longitude: longitude).makeSolarDates()
+            if let (fromDate, toDate) = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+                .makeDatesForLabel()
             {
-                let sunsetDateStr = dateFormatter.string(from: sunset)
-                let sunriseDateStr = dateFormatter.string(from: sunrise)
-                return "From \(sunsetDateStr) to \(sunriseDateStr)"
+                return "From \(df.string(from: fromDate)) to \(df.string(from: toDate))"
             } else {
                 return "Error: Invalid coordinate"
             }

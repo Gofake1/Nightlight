@@ -15,7 +15,7 @@ final class CacheProxy: NSObject {
         super.init()
         DistributedNotificationCenter.default().addObserver(self, selector: #selector(emptyCache),
                                                             name: _notificationEmptyCache,
-                                                            object: _objectHost, suspensionBehavior: .drop)
+                                                            object: _nightlight, suspensionBehavior: .drop)
     }
     
     @objc private func emptyCache() {

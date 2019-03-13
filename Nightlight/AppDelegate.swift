@@ -11,7 +11,7 @@ import AppKit
 @NSApplicationMain
 final class AppDelegate: NSObject {
     @IBAction func emptyCache(_ sender: NSMenuItem) {
-        DistributedNotificationCenter.default().post(name: _notificationEmptyCache, object: _objectHost)
+        DistributedNotificationCenter.default().post(name: _notificationEmptyCache, object: _nightlight)
     }
     
     @IBAction func showHelp(_ sender: NSMenuItem) {

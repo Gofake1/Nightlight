@@ -6,7 +6,8 @@
 //  Copyright © 2018 Gofake1. All rights reserved.
 //
 
-import CoreLocation
+import struct CoreLocation.CLLocationCoordinate2D
+import Foundation
 
 let _defaults: [String: Any] = [
     AppDefaultKind.autoOnMode.rawValue:       AutoOnMode.manual.rawValue,
@@ -14,7 +15,7 @@ let _defaults: [String: Any] = [
     AppDefaultKind.autoOnToTime.rawValue:     28800
 ]
 let _notificationEmptyCache = NSNotification.Name("emptyCache")
-let _objectHost = "net.gofake1.Nightlight"
+let _nightlight = "net.gofake1.Nightlight"
 
 enum AutoOnMode: String {
     case manual
@@ -33,23 +34,18 @@ enum AppDefaultKind: String {
 }
 
 extension CLLocationCoordinate2D {
-    func makeSolarDates() -> (sunset: Date, sunrise: Date)? {
-        let solar = Solar(coordinate: self)
-        if let solar = solar, var sunset = solar.sunset, var sunrise = solar.sunrise {
-            let now = Date()
-            let cal = Calendar.autoupdatingCurrent
-            // Truncate seconds
-            sunset = cal.date(from: cal.dateComponents([.year, .month, .day, .hour, .minute], from: sunset))!
-            sunrise = cal.date(from: cal.dateComponents([.year, .month, .day, .hour, .minute], from: sunrise))!
-            if sunset < now {
-                sunset = cal.date(byAdding: .day, value: 1, to: sunset)!
-            }
-            if sunrise < now {
-                sunrise = cal.date(byAdding: .day, value: 1, to: sunrise)!
-            }
-            return (sunset, sunrise)
+    func makeDatesForLabel() -> (from: Date, to: Date)? {
+        let now = Date()
+        guard let sol = Solar(for: now, coordinate: self), let sunrise = sol.sunrise, let sunset = sol.sunset
+            else { return nil }
+        let yesterday = Calendar.autoupdatingCurrent.date(byAdding: .day, value: -1, to: now)!
+        let tomorrow = Calendar.autoupdatingCurrent.date(byAdding: .day, value: 1, to: now)!
+        if now < sunrise {
+            guard let sol = Solar(for: yesterday, coordinate: self), let prevSunset = sol.sunset else { return nil }
+            return (prevSunset, sunrise)
         } else {
-            return nil
+            guard let sol = Solar(for: tomorrow, coordinate: self), let nextSunrise = sol.sunrise else { return nil }
+            return (sunset, nextSunrise)
         }
     }
 }
