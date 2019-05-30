@@ -503,15 +503,20 @@ function makeLightStyleColor(str) {
   });
 }
 
-function makeCtxs(makeCtx) {
-  return DARK_PROPS.map(prop => makeCtx(prop, makeDarkStyleColor))
-    .concat(LIGHT_PROPS.map(prop => makeCtx(prop, makeLightStyleColor)))
-    .concat([makeCtx('backgroundImage', makeBackgroundImage),
-      makeCtx('fill', makeSvgFillColor),
-      makeCtx('strokeColor', makeSvgStrokeColor),
-      makeCtx('lightingColor', makeSvgLightingColor),
-      makeCtx('floodColor', makeSvgFloodColor),
-      makeCtx('stopColor', makeSvgStopColor)]);
+function makeCtxs(makeCtx, decl) {
+  return DARK_PROPS.map(prop => makeCtx(prop, decl, makeDarkStyleColor))
+    .concat(LIGHT_PROPS.map(prop => makeCtx(prop, decl, makeLightStyleColor)))
+    .concat([makeCtx('backgroundImage', decl, makeBackgroundImage),
+      makeCtx('fill', decl, makeSvgFillColor),
+      makeCtx('strokeColor', decl, makeSvgStrokeColor),
+      makeCtx('lightingColor', decl, makeSvgLightingColor),
+      makeCtx('floodColor', decl, makeSvgFloodColor),
+      makeCtx('stopColor', decl, makeSvgStopColor)]);
+}
+
+function makeCtxs_Selection(makeCtx, decl) {
+  return [makeCtx('backgroundColor', decl, makeLightStyleColor),
+    makeCtx('color', decl, makeDarkStyleColor)]
 }
 
 // ---
@@ -552,9 +557,11 @@ function makeStyle(ruler) {
 // Returns string
 function makeRuleStr(str, rule) {
   if(rule.type == 1) {
-    const decl = makeAttributeDeclStr(rule.style);
-    if(decl != '') {
-      str += rule.selectorText+' { '+decl+' } ';
+    // TODO: Make "::selection" check more correct
+    if(rule.selectorText == '::selection') {
+      str += rule.selectorText+' { '+makeAttributeDeclStr_Selection(rule.style)+' } ';
+    } else {
+      str += rule.selectorText+' { '+makeAttributeDeclStr(rule.style)+' } ';
     }
   } else if(rule.type == 3) {
     str += makeStyle(rule.styleSheet);
@@ -570,29 +577,37 @@ function makeRuleStr(str, rule) {
 
 // --- Style attribute helpers ---
 
+function makeCtx(prop, decl, f) {
+  return {
+    prop: prop,
+    priority: decl.getPropertyPriority(CSS_NAME_FOR_PROP[prop]),
+    f: f
+  };
+}
+
+function modifyDecl(ctx, decl) {
+  const value = decl[ctx.prop];
+  if(value == '') {
+    return;
+  }
+  decl.setProperty(CSS_NAME_FOR_PROP[ctx.prop], ctx.f(value), ctx.priority);
+}
+
 // decl - `CSSStyleDeclaration`
 // Returns string
 function makeAttributeDeclStr(decl) {
-  function makeCtx(prop, f) {
-    return {
-      prop: prop,
-      priority: decl.getPropertyPriority(CSS_NAME_FOR_PROP[prop]),
-      f: f
-    };
-  }
-
-  function modifyDecl(ctx, decl) {
-    const value = decl[ctx.prop];
-    if(value == '') {
-      return;
-    }
-    decl.setProperty(CSS_NAME_FOR_PROP[ctx.prop], ctx.f(value), ctx.priority);
-  }
-
   const div = document.createElement('div');
   div.style = decl.cssText;
   const newDecl = div.style;
-  makeCtxs(makeCtx).forEach(ctx => modifyDecl(ctx, newDecl));
+  makeCtxs(makeCtx, decl).forEach(ctx => modifyDecl(ctx, newDecl));
+  return newDecl.cssText;
+}
+
+function makeAttributeDeclStr_Selection(decl) {
+  const div = document.createElement('div');
+  div.style = decl.cssText;
+  const newDecl = div.style;
+  makeCtxs_Selection(makeCtx, decl).forEach(ctx => modifyDecl(ctx, newDecl));
   return newDecl.cssText;
 }
 
