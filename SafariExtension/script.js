@@ -41,8 +41,31 @@ class StyleSheetBuiltinBundle {
 }
 StyleSheetBuiltinBundle.id = 0;
 
-class StyleSheetOverrideBundle {
+class StyleSheetCustomBundle {
   constructor(str) {
+    this.node = document.createElement('style');
+    this.node.appendChild(document.createTextNode(str));
+    this.node.disabled = true;
+    this.node.id = '_nightlight_custom_'+StyleSheetCustomBundle.nextId();
+    document.head.appendChild(this.node);
+  }
+  enable() {
+    this.node.disabled = false;
+  }
+  disable() {
+    this.node.disabled = true;
+  }
+  static nextId() {
+    const id = StyleSheetCustomBundle.id;
+    StyleSheetCustomBundle.id++;
+    return id;
+  }
+}
+StyleSheetCustomBundle.id = 0;
+
+class StyleSheetOverrideBundle {
+  constructor(str, originalStyle) {
+    this.originalStyle = originalStyle;
     this.node = document.createElement('style');
     this.node.appendChild(document.createTextNode(str));
     this.node.disabled = true;
@@ -51,8 +74,10 @@ class StyleSheetOverrideBundle {
   }
   enable() {
     this.node.disabled = false;
+    this.originalStyle.disabled = true;
   }
   disable() {
+    this.originalStyle.disabled = false;
     this.node.disabled = true;
   }
   static nextId() {
@@ -92,30 +117,35 @@ class ImageBundle {
   }
 }
 
-const MUTATION_OBSERVER = new MutationObserver(onMutation);
-const BUNDLE_LIST = new BundleList([], false);
+let MUTATION_OBSERVER;
+let BUNDLE_LIST;
 let WARMED_UP = false;
 
-safari.self.addEventListener('message', event => {
-  switch(event.name) {
-  case 'START':
-    warmup();
-    BUNDLE_LIST.setEnabled(true);
-    break;
-  case 'STOP':
-    BUNDLE_LIST.setEnabled(false);
-    break;
-  case 'TOGGLE':
-    warmup();
-    BUNDLE_LIST.setEnabled(!BUNDLE_LIST.enabled);
-    break;
-  case 'resource':
-    addStyleSheetOverrideBundle(event.message.resource);
-    break;
-  }
-});
+if(window == window.top) {
+  MUTATION_OBSERVER = new MutationObserver(onMutation);
+  BUNDLE_LIST = new BundleList([], false);
 
-safari.extension.dispatchMessage('READY');
+  safari.self.addEventListener('message', event => {
+    switch(event.name) {
+    case 'START':
+      warmup();
+      BUNDLE_LIST.setEnabled(true);
+      break;
+    case 'STOP':
+      BUNDLE_LIST.setEnabled(false);
+      break;
+    case 'TOGGLE':
+      warmup();
+      BUNDLE_LIST.setEnabled(!BUNDLE_LIST.enabled);
+      break;
+    case 'resource':
+      addStyleSheetCustomBundle(event.message.resource);
+      break;
+    }
+  });
+
+  safari.extension.dispatchMessage('READY');
+}
 
 function warmup() {
   if(!WARMED_UP) {
@@ -176,7 +206,7 @@ function onMutation(mutations) {
     arr.concat([].slice.call(m.addedNodes).reduce(makeBundle, []));
     return arr;
   }
-  
+
   const bundles = mutations.reduce(makeBundlesForMutation, []);
   if(bundles.length == 0) {
     return;
@@ -235,14 +265,18 @@ function makeStyleSheetOverrideBundle(arr, sheet) {
 }
 
 function makeStyleSheetOverrideBundleFromSheet(arr, sheet) {
+  // Style sheets in <link> elements may have a media attribute
+  if(!isValidMediaType(sheet)) {
+    return arr;
+  }
   const str = makeStyle(sheet);
   if(str != '') {
-    arr.push(new StyleSheetOverrideBundle(str));
+    arr.push(new StyleSheetOverrideBundle(str, sheet));
   }
   return arr;
 }
 
-function addStyleSheetOverrideBundle(str) {
+function addStyleSheetCustomBundle(str) {
   const style = document.createElement('style');
   style.appendChild(document.createTextNode(str));
   style.disabled = true;
@@ -250,7 +284,7 @@ function addStyleSheetOverrideBundle(str) {
   const newStr = makeStyle(style.sheet);
   document.head.removeChild(style);
   if(newStr != '') {
-    BUNDLE_LIST.hotload([new StyleSheetOverrideBundle(newStr)]);
+    BUNDLE_LIST.hotload([new StyleSheetCustomBundle(newStr)]);
   }
 }
 
@@ -343,7 +377,7 @@ const SVG_FILL_CACHE = {};
 function makeSvgFillColor(str) {
   if(str.substring(0, 4) == 'url(') {
     return null;
-  } 
+  }
   return makeColor(str, SVG_FILL_CACHE, function(r, g, b, a) {
     if(saturation(r, g, b) < 0.15 && luminance(r, g, b) <= 100) {
       // Invert dark grays
@@ -486,32 +520,31 @@ function makeCtxs(makeCtx) {
 
 const VALID_MEDIA_TYPES = new Set(['all', 'screen', 'only screen']);
 
+function isValidMediaType(sheet) {
+  // Imported style sheets have null media
+  if(!sheet.media || sheet.media.mediaText == '') {
+    return true;
+  }
+  for(const styleMedium of sheet.media) {
+    if(!VALID_MEDIA_TYPES.has(styleMedium)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 // ruler - `CSSStyleSheet` or `CSSMediaRule`
 // Returns string
 function makeStyle(ruler) {
-  function isValidMediaType() {
-    // Imported style sheets have null media
-    if(!ruler.media || ruler.media.mediaText == '') {
-      return true;
-    }
-    for(const styleMedium of ruler.media) {
-      if(VALID_MEDIA_TYPES.has(styleMedium)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  if(isValidMediaType()) {
-    if(!ruler.cssRules) {
-      // Workaround: Importing cross-origin style sheet
-      safari.extension.dispatchMessage('wantsResource', { href: ruler.href });
-      return '';
-    } else {
-      return [].slice.call(ruler.cssRules).reduce(makeRuleStr, '');
-    }
-  } else {
+  if(ruler.constructor.name == 'CSSStyleSheet' && !isValidMediaType(ruler)) {
     return '';
+  }
+  if(!ruler.cssRules) {
+    // Workaround: Importing cross-origin style sheet
+    safari.extension.dispatchMessage('wantsResource', { href: ruler.href });
+    return '';
+  } else {
+    return [].slice.call(ruler.cssRules).reduce(makeRuleStr, '');
   }
 }
 
@@ -519,43 +552,18 @@ function makeStyle(ruler) {
 // Returns string
 function makeRuleStr(str, rule) {
   if(rule.type == 1) {
-    const decl = makeSheetDeclStr(rule.style);
+    const decl = makeAttributeDeclStr(rule.style);
     if(decl != '') {
-      return str += rule.selectorText+'{'+decl+'}';
+      str += rule.selectorText+' { '+decl+' } ';
     }
   } else if(rule.type == 3) {
     str += makeStyle(rule.styleSheet);
   } else if(rule.type == 4) {
-    str += '@media '+rule.media.mediaText+'{'+makeStyle(rule)+'}';
-  } 
+    str += '@media '+rule.media.mediaText+' { '+makeStyle(rule)+' } ';
+  } else {
+    str += rule.cssText;
+  }
   return str;
-}
-
-// decl - `CSSStyleDeclaration`
-// Returns string
-function makeSheetDeclStr(decl) {
-  function makeCtx(prop, f) {
-    return {
-      prop: prop,
-      value: decl[prop],
-      isImportant: decl.getPropertyPriority(CSS_NAME_FOR_PROP[prop]) ==
-        'important',
-      f: f 
-    };
-  }
-
-  function makeStr(str, ctx) {
-    if(ctx.value != '') {
-      const newValue = ctx.f(ctx.value);
-      if(newValue) {
-        str += CSS_NAME_FOR_PROP[ctx.prop]+':'+newValue+
-          (ctx.isImportant ? '!important;' : ';');
-      }
-    }
-    return str;
-  }
-
-  return makeCtxs(makeCtx).reduce(makeStr, '');
 }
 
 // ---
@@ -750,7 +758,7 @@ function same(r, g, b, a) {
 
 function rgbToHex(str) {
   const tokens = str.slice(4, -1).split(',');
-  const num = parseInt(tokens[2]) | (parseInt(tokens[1]) << 8) | 
+  const num = parseInt(tokens[2]) | (parseInt(tokens[1]) << 8) |
     (parseInt(tokens[0] << 16));
   return '#'+(0x1000000+num).toString(16).slice(1);
 }
@@ -782,7 +790,7 @@ function makeBackgroundImage(str) {
         return makeDarkStyleColor(obj.color)+(obj.stop ? ' '+obj.stop : '');
       }).join(',')+')';
   }
-  
+
   return parseBackgroundImage(str).map(prop => {
     switch(prop.type) {
     case BACKGROUND_IMAGE_TYPE.URL:
