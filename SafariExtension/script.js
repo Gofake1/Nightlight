@@ -224,6 +224,7 @@ function start() {
     .reduce(makeStyleBundle, []);
   const bgColors = [].slice.call(document.querySelectorAll('[bgcolor]'))
     .reduce(makeBgColorBundle, []);
+  const bodyColors = ['text', 'link', 'alink', 'vlink'].reduce(makeBodyColorBundle, []);
   const fontColors = [].slice.call(document.querySelectorAll('font[color]'))
     .reduce(makeFontColorBundle, []);
   const svgFills = [].slice.call(document.querySelectorAll('[fill]'))
@@ -240,7 +241,7 @@ function start() {
   const images = [].slice.call(document.getElementsByTagName('img'))
     .reduce(makeImageBundle, []);
   return builtins.concat(overrides).concat(styles).concat(bgColors)
-    .concat(fontColors).concat(svgFills).concat(images);
+    .concat(bodyColors).concat(fontColors).concat(svgFills).concat(images);
 }
 
 // --- Bundle helpers ---
@@ -302,6 +303,17 @@ function makeBgColorBundle(arr, node) {
     // Workaround: Safari doesn't display correct color when formatted as RGB
     arr.push(new AttributeBundle(node, 'bgcolor', node.bgColor,
       rgbToHex(str)));
+  }
+  return arr;
+}
+
+function makeBodyColorBundle(arr, bodyAttr) {
+  const value = document.body.getAttribute(bodyAttr);
+  if(value) {
+    const newValue = makeLightStyleColor(value);
+    if(newValue) {
+      arr.push(new AttributeBundle(document.body, bodyAttr, value, newValue));
+    }
   }
   return arr;
 }
