@@ -467,10 +467,9 @@ const CSS_NAME_FOR_PROP = {
   'webkitTextStrokeColor': '-webkit-text-stroke-color'
 };
 const DARK_PROPS = ['backgroundColor', 'webkitTextFillColor'];
-// TODO: Deduplicate processed border rules
 const LIGHT_PROPS = [
 'borderBottomColor',
-'borderColor',
+//'borderColor', // Workaround: `CSSStyleDeclaration` returns weird value (e.g. "blue blue rgb(...)")
 'borderLeftColor',
 'borderRightColor',
 'borderTopColor',
@@ -684,7 +683,7 @@ function makeColor(str, cache, f_rgba) {
       } else if(['none', 'transparent', 'initial', 'inherit', 'currentcolor']
         .includes(str))
       {
-        return null;
+        return str;
       } else {
         console.error('Invalid color '+str);
         return null;
